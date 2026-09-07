@@ -12,6 +12,7 @@ import {
   Check,
   RotateCcw,
   Sparkles,
+  Palmtree,
 } from 'lucide-react';
 
 interface AssignedClass {
@@ -49,6 +50,10 @@ export default function TakeAttendancePage() {
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   const [records, setRecords] = useState<AttendanceStudentRow[]>([]);
+  const [isHoliday, setIsHoliday] = useState<boolean>(false);
+  const [holidayTitle, setHolidayTitle] = useState<string | null>(null);
+  const [holidayDescription, setHolidayDescription] = useState<string | null>(null);
+
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,9 +88,17 @@ export default function TakeAttendancePage() {
     try {
       const secQuery = selectedSectionId ? `&sectionId=${selectedSectionId}` : '';
       const dateQuery = `&date=${date}`;
-      const res = await apiFetch<{ date: string; records: AttendanceStudentRow[] }>(
-        `/teacher/attendance?classId=${selectedClassId}${secQuery}${dateQuery}`
-      );
+      const res = await apiFetch<{
+        date: string;
+        isHoliday?: boolean;
+        holidayTitle?: string;
+        holidayDescription?: string;
+        records: AttendanceStudentRow[];
+      }>(`/teacher/attendance?classId=${selectedClassId}${secQuery}${dateQuery}`);
+
+      setIsHoliday(!!res.isHoliday);
+      setHolidayTitle(res.holidayTitle || null);
+      setHolidayDescription(res.holidayDescription || null);
       setRecords(res.records || []);
     } catch (err: any) {
       setError(err.message || 'Failed to load attendance records');
@@ -112,6 +125,7 @@ export default function TakeAttendancePage() {
 
   // Toggle Status for a single student
   const handleStatusChange = (studentId: string, status: 'PRESENT' | 'ABSENT') => {
+    if (isHoliday) return;
     setRecords((prev) =>
       prev.map((r) => (r.studentId === studentId ? { ...r, status } : r))
     );
@@ -119,12 +133,13 @@ export default function TakeAttendancePage() {
 
   // Mark All Present
   const handleMarkAllPresent = () => {
+    if (isHoliday) return;
     setRecords((prev) => prev.map((r) => ({ ...r, status: 'PRESENT' })));
   };
 
   // Submit Attendance
   const handleSubmitAttendance = async () => {
-    if (!selectedClassId || records.length === 0) return;
+    if (!selectedClassId || records.length === 0 || isHoliday) return;
 
     setSubmitting(true);
     setError(null);
@@ -171,15 +186,15 @@ export default function TakeAttendancePage() {
         <div className="flex items-center gap-3">
           <button
             onClick={handleMarkAllPresent}
-            disabled={loading || records.length === 0 || submitting}
-            className="px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-semibold border border-cyan-500/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
+            disabled={loading || records.length === 0 || submitting || isHoliday}
+            className="px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-semibold border border-cyan-500/20 transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Mark All Present</span>
           </button>
           <button
             onClick={handleSubmitAttendance}
-            disabled={loading || records.length === 0 || submitting}
+            disabled={loading || records.length === 0 || submitting || isHoliday}
             className="px-5 py-2.5 gradient-button text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-lg hover:shadow-cyan-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? (
@@ -196,6 +211,22 @@ export default function TakeAttendancePage() {
           </button>
         </div>
       </div>
+
+      {/* Holiday Alert Banner */}
+      {isHoliday && (
+        <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex items-start gap-3 shadow-lg animate-fade-in">
+          <Palmtree className="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <div className="font-bold text-amber-200 text-base flex items-center gap-2">
+              <span>🚫 Holiday Declared: {holidayTitle}</span>
+            </div>
+            <p className="text-xs text-amber-300/80 mt-1">
+              Attendance entry is disabled for this date because a school holiday has been declared by administration.
+              {holidayDescription ? ` (${holidayDescription})` : ''}
+            </p>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3 animate-shake">
@@ -310,24 +341,26 @@ export default function TakeAttendancePage() {
                       <div className="inline-flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800 gap-1">
                         <button
                           type="button"
+                          disabled={isHoliday}
                           onClick={() => handleStatusChange(r.studentId, 'PRESENT')}
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                             r.status === 'PRESENT'
                               ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm'
                               : 'text-slate-400 hover:text-slate-200'
-                          }`}
+                          } ${isHoliday ? 'cursor-not-allowed opacity-50' : ''}`}
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>Present</span>
                         </button>
                         <button
                           type="button"
+                          disabled={isHoliday}
                           onClick={() => handleStatusChange(r.studentId, 'ABSENT')}
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                             r.status === 'ABSENT'
                               ? 'bg-red-500/20 text-red-400 border border-red-500/40 shadow-sm'
                               : 'text-slate-400 hover:text-slate-200'
-                          }`}
+                          } ${isHoliday ? 'cursor-not-allowed opacity-50' : ''}`}
                         >
                           <XCircle className="w-3.5 h-3.5" />
                           <span>Absent</span>

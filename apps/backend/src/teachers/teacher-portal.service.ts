@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
 
@@ -321,8 +321,21 @@ export class TeacherPortalService {
     const students = await this.getStudentsForClass(userId, schoolId, classId, sectionId);
 
     const targetDate = dateStr ? new Date(dateStr) : new Date();
-    const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+    const startOfDay = new Date(new Date(targetDate).setHours(0, 0, 0, 0));
+    const endOfDay = new Date(new Date(targetDate).setHours(23, 59, 59, 999));
+
+    // Check if target date falls on any holiday
+    const holiday = await this.prisma.holiday.findFirst({
+      where: {
+        schoolId,
+        startDate: { lte: endOfDay },
+        endDate: { gte: startOfDay },
+      },
+    });
+
+    const isHoliday = !!holiday;
+    const holidayTitle = holiday ? holiday.title : null;
+    const holidayDescription = holiday ? holiday.description : null;
 
     const attWhere: any = {
       schoolId,
@@ -358,6 +371,9 @@ export class TeacherPortalService {
 
     return {
       date: startOfDay.toISOString().split('T')[0],
+      isHoliday,
+      holidayTitle,
+      holidayDescription,
       records: result,
     };
   }
@@ -370,19 +386,33 @@ export class TeacherPortalService {
     const teacher = await this.getTeacherByUserId(userId, schoolId);
     await this.verifyTeacherAssignment(teacher.id, schoolId, dto.classId, dto.sectionId);
 
+    const targetDate = new Date(dto.date);
+    const startOfDay = new Date(new Date(targetDate).setHours(0, 0, 0, 0));
+    const endOfDay = new Date(new Date(targetDate).setHours(23, 59, 59, 999));
+
+    // Holiday validation block
+    const holiday = await this.prisma.holiday.findFirst({
+      where: {
+        schoolId,
+        startDate: { lte: endOfDay },
+        endDate: { gte: startOfDay },
+      },
+    });
+
+    if (holiday) {
+      throw new BadRequestException(`Cannot mark attendance on holiday: ${holiday.title}`);
+    }
+
     const currentAcademicYear = await this.prisma.academicYear.findFirst({
       where: { schoolId, isCurrent: true },
     });
-
-    const targetDate = new Date(dto.date);
-    targetDate.setHours(0, 0, 0, 0);
 
     const operations = dto.records.map((record) =>
       this.prisma.attendance.upsert({
         where: {
           studentId_date: {
             studentId: record.studentId,
-            date: targetDate,
+            date: startOfDay,
           },
         },
         update: {
