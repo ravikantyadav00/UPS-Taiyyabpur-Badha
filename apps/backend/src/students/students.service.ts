@@ -249,6 +249,38 @@ export class StudentsService {
     });
   }
 
+  async deleteAllStudents(schoolId: string, classId?: string, sectionId?: string) {
+    const where: any = { schoolId };
+    if (classId) where.classId = classId;
+    if (sectionId) where.sectionId = sectionId;
+
+    const students = await this.prisma.student.findMany({
+      where,
+      select: { id: true, userId: true },
+    });
+
+    if (students.length === 0) {
+      return { count: 0, message: 'No students found to delete' };
+    }
+
+    const studentIds = students.map((s) => s.id);
+    const userIds = students.map((s) => s.userId).filter(Boolean);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.student.deleteMany({
+        where: { id: { in: studentIds } },
+      });
+      if (userIds.length > 0) {
+        await tx.user.deleteMany({
+          where: { id: { in: userIds } },
+        });
+      }
+    });
+
+    return { count: studentIds.length, message: `Successfully deleted ${studentIds.length} student(s)` };
+  }
+
+
   async bulkImportStudents(schoolId: string, dtos: CreateStudentDto[]) {
     let successCount = 0;
     let failureCount = 0;

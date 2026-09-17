@@ -19,9 +19,32 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Enable CORS
-  const corsOrigin = configService.get<string>('corsOrigin') || 'http://localhost:3000';
+  const nodeEnv = configService.get<string>('nodeEnv') || 'development';
+  const rawCorsOrigin = configService.get<string>('corsOrigin') || 'http://localhost:3000';
+  const configuredOrigins = rawCorsOrigin
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: corsOrigin,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (such as mobile native apps, cURL, or Postman)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // Allow origins explicitly specified in CORS_ORIGIN config
+      if (configuredOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // In development mode, allow any localhost or 127.0.0.1 port (Expo Web, Next.js dev, etc.)
+      if (nodeEnv !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      callback(new Error(`CORS origin '${origin}' not allowed by policy`));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],

@@ -63,6 +63,19 @@ export class StudentsController {
     return this.studentsService.updateStudent(user.schoolId, id, dto);
   }
 
+  @Delete('all')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete all students in school (or filtered class/section)' })
+  @ApiQuery({ name: 'classId', required: false })
+  @ApiQuery({ name: 'sectionId', required: false })
+  async deleteAllStudents(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('classId') classId?: string,
+    @Query('sectionId') sectionId?: string,
+  ) {
+    return this.studentsService.deleteAllStudents(user.schoolId, classId, sectionId);
+  }
+
   @Delete(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete student profile and account' })

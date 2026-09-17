@@ -55,6 +55,10 @@ export default function StudentsPage() {
   const [bulkResult, setBulkResult] = useState<{ successCount: number; failureCount: number; errors: any[] } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Delete All State
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
+
   // Enroll Form states (In exact requested order)
   const [admissionNumber, setAdmissionNumber] = useState(''); // 1. SR No
   const [firstName, setFirstName] = useState('');              // 2. Student Name
@@ -284,6 +288,23 @@ export default function StudentsPage() {
       await loadData();
     } catch (err: any) {
       alert(err.message || 'Failed to delete student');
+    }
+  };
+
+  const handleDeleteAllStudents = async () => {
+    setDeletingAll(true);
+    try {
+      const query = selectedClass ? `?classId=${selectedClass}` : '';
+      const res = await apiFetch<{ count: number; message: string }>(`/students/all${query}`, {
+        method: 'DELETE',
+      });
+      alert(res.message || 'All students deleted successfully');
+      setShowDeleteAllModal(false);
+      await loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete students');
+    } finally {
+      setDeletingAll(false);
     }
   };
 
@@ -667,7 +688,17 @@ export default function StudentsPage() {
             <span>Export PDF</span>
           </button>
 
-          {/* 5. Enroll Student */}
+          {/* 5. Delete All Students Button */}
+          <button
+            onClick={() => setShowDeleteAllModal(true)}
+            title="Delete All Students"
+            className="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-md transition-all"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>{selectedClass ? 'Delete Class Students' : 'Delete All Students'}</span>
+          </button>
+
+          {/* 6. Enroll Student */}
           <button
             onClick={() => setShowModal(true)}
             className="px-4 py-2 gradient-button text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-md"
@@ -730,6 +761,7 @@ export default function StudentsPage() {
                 <th className="px-4 py-3">Mother Name</th>
                 <th className="px-4 py-3 text-center">Edit</th>
                 <th className="px-4 py-3 text-center">View All Details</th>
+                <th className="px-4 py-3 text-center">Delete</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
@@ -761,6 +793,17 @@ export default function StudentsPage() {
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>View Details</span>
+                    </button>
+                  </td>
+
+                  {/* Dedicated Delete Column */}
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={() => handleDeleteStudent(student)}
+                      className="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 font-medium flex items-center justify-center gap-1.5 mx-auto transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete</span>
                     </button>
                   </td>
                 </tr>
@@ -1501,6 +1544,64 @@ export default function StudentsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Delete All Modal Confirmation */}
+      {showDeleteAllModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md glass-panel p-6 rounded-2xl border border-rose-500/30 space-y-5">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-100">Delete All Students</h3>
+                <p className="text-xs text-rose-400 font-medium">Warning: Irreversible Action</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 space-y-2">
+              <p>
+                {selectedClass ? (
+                  <>You are about to delete <strong>ALL students in {classes.find((c) => c.id === selectedClass)?.name || 'the selected class'}</strong> ({students.length} students currently shown).</>
+                ) : (
+                  <>You are about to delete <strong>ALL students in the entire school</strong> ({students.length} total students).</>
+                )}
+              </p>
+              <p className="text-rose-400">
+                This will permanently delete student profiles, student user login accounts, academic records, and attendance data.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteAllModal(false)}
+                disabled={deletingAll}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAllStudents}
+                disabled={deletingAll}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50"
+              >
+                {deletingAll ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Yes, Delete All Students</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

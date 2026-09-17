@@ -16,6 +16,7 @@ import {
   Clock,
   ShieldCheck,
   Palmtree,
+  Bell,
 } from 'lucide-react';
 
 interface NavItem {
@@ -31,6 +32,7 @@ const navigation: NavItem[] = [
   { name: 'School Profile', href: '/dashboard/school', icon: Building2, active: true },
   { name: 'Academic Years', href: '/dashboard/academic-years', icon: Calendar, active: true },
   { name: 'Holidays', href: '/dashboard/holidays', icon: Palmtree, active: true },
+  { name: 'Notices Board', href: '/dashboard/notices', icon: Bell, active: true },
   { name: 'Classes & Sections', href: '/dashboard/classes', icon: BookOpen, active: true },
   { name: 'Teachers', href: '/dashboard/teachers', icon: Users, active: true },
   { name: 'Students', href: '/dashboard/students', icon: GraduationCap, active: true },

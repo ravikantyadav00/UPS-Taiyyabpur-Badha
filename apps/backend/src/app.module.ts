@@ -17,6 +17,7 @@ import { ExamsModule } from './exams/exams.module';
 import { FeesModule } from './fees/fees.module';
 import { TimetablesModule } from './timetables/timetables.module';
 import { HolidaysModule } from './holidays/holidays.module';
+import { NoticesModule } from './notices/notices.module';
 import { HealthModule } from './health/health.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -47,6 +48,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     FeesModule,
     TimetablesModule,
     HolidaysModule,
+    NoticesModule,
     HealthModule,
   ],
   providers: [

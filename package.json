@@ -9,6 +9,7 @@
   "scripts": {
     "dev:backend": "npm run start:dev --workspace=apps/backend",
     "dev:web": "npm run dev --workspace=apps/web",
+    "dev:mobile": "npm run start --workspace=apps/mobile",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:web\"",
     "build:backend": "npm run build --workspace=apps/backend",
     "build:web": "npm run build --workspace=apps/web",
@@ -19,7 +20,9 @@
     "test:e2e": "npm run test:e2e --workspace=apps/backend",
     "prisma:generate": "npm run prisma:generate --workspace=apps/backend",
     "prisma:migrate": "npm run prisma:migrate --workspace=apps/backend",
-    "prisma:seed": "npm run prisma:seed --workspace=apps/backend"
+    "prisma:seed": "npm run prisma:seed --workspace=apps/backend",
+    "cap:sync": "npm run cap:sync --workspace=apps/web",
+    "cap:open": "npm run cap:open --workspace=apps/web"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">UPS Taiyyabpur Badha</string>
+    <string name="title_activity_main">UPS Taiyyabpur Badha</string>
+    <string name="package_name">com.upstaiyyabpurbadha.school</string>
+    <string name="custom_url_scheme">com.upstaiyyabpurbadha.school</string>
+</resources>

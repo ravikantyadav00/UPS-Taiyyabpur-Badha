@@ -2,12 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@school/shared'],
-  async redirects() {
+  async rewrites() {
     return [
       {
-        source: '/',
-        destination: '/login',
-        permanent: false,
+        source: '/api/:path*',
+        destination: 'http://localhost:3001/api/:path*',
       },
     ];
   },
