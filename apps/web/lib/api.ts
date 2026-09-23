@@ -4,7 +4,7 @@ export interface ApiFetchOptions extends RequestInit {
   token?: string;
 }
 
-const MOCK_STORAGE_KEY = 'ups_taiyyabpur_badha_mock_db_v3';
+const MOCK_STORAGE_KEY = 'ups_taiyyabpur_badha_mock_db_v4';
 
 interface MockDB {
   school: any;
@@ -365,6 +365,160 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     return { success: true };
   }
 
+  // ==========================================
+  // DEDICATED TEACHER PORTAL ROUTES
+  // ==========================================
+  if (path.startsWith('/teacher/')) {
+    // 1. Dashboard Summary
+    if (path === '/teacher/dashboard-summary') {
+      const totalStudents = db.students.length;
+      return {
+        teacherName: 'Shri Rakesh Sharma',
+        employeeId: 'EMP-001',
+        myClassesCount: db.classes.length,
+        myStudentsCount: totalStudents,
+        todaysAttendanceCount: totalStudents > 0 ? Math.max(0, totalStudents - 2) : 0,
+        pendingAttendanceCount: 0,
+      };
+    }
+
+    // 2. Teacher Profile
+    if (path === '/teacher/me') {
+      return {
+        id: 't-101',
+        employeeId: 'EMP-001',
+        firstName: 'Rakesh',
+        lastName: 'Sharma',
+        designation: 'Assistant Teacher',
+        qualification: 'M.Sc., B.Ed.',
+        phone: '+91 9876501234',
+        email: 'rakesh.sharma@upstaiyyabpurbadha.edu.in',
+        status: 'ACTIVE',
+        joinedDate: '2020-07-15',
+        user: {
+          id: 'user-t1',
+          email: 'teacher@school.com',
+          username: 'teacher',
+          role: 'TEACHER',
+        },
+        teacherAssignments: db.classes.slice(0, 4).map((c, idx) => ({
+          id: `ta-${idx}`,
+          subjectName: c.name.includes('6') ? 'Mathematics' : c.name.includes('7') ? 'Science' : 'General Subjects',
+          class: { name: c.name },
+          section: { name: c.sections?.[0]?.name || 'A' },
+        })),
+      };
+    }
+
+    // 3. Teacher Assigned Classes List
+    if (path === '/teacher/classes') {
+      const assigned: any[] = [];
+      db.classes.forEach((c) => {
+        const secs = c.sections && c.sections.length > 0 ? c.sections : [{ id: 'sec-a', name: 'A' }];
+        secs.forEach((sec: any) => {
+          const stCount = db.students.filter((s) => s.classId === c.id || s.class?.id === c.id).length || 25;
+          assigned.push({
+            id: `assign-${c.id}-${sec.id}`,
+            classId: c.id,
+            sectionId: sec.id,
+            className: c.name,
+            sectionName: sec.name,
+            subjectName: c.name.includes('6') ? 'Mathematics & Science' : c.name.includes('7') ? 'Science' : 'General Subjects',
+            academicYear: '2026-2027',
+            studentCount: stCount,
+          });
+        });
+      });
+      return assigned;
+    }
+
+    // 4. Teacher Class Students List (e.g. /teacher/classes/c-6/students)
+    if (path.includes('/classes/') && path.endsWith('/students')) {
+      const parts = path.split('/').filter(Boolean);
+      const classId = parts[2]; // /teacher/classes/:classId/students
+      const sectionId = searchParams.get('sectionId');
+      let filtered = db.students.filter((s) => s.classId === classId || s.class?.id === classId);
+      if (sectionId) {
+        filtered = filtered.filter((s) => s.sectionId === sectionId || s.section?.id === sectionId);
+      }
+      return filtered;
+    }
+
+    // 5. Teacher Attendance GET / POST / History
+    if (path === '/teacher/attendance' || path.startsWith('/teacher/attendance/')) {
+      if (path === '/teacher/attendance/bulk' && method === 'POST') {
+        const recs = bodyData.records || [];
+        recs.forEach((r: any) => {
+          db.attendance.push({ ...r, date: bodyData.date, classId: bodyData.classId });
+        });
+        saveMockDB(db);
+        return { success: true, count: recs.length };
+      }
+
+      if (path === '/teacher/attendance/history') {
+        return [
+          { date: '2026-09-24', presentCount: 33, absentCount: 2, leaveCount: 0, totalCount: 35 },
+          { date: '2026-09-23', presentCount: 34, absentCount: 1, leaveCount: 0, totalCount: 35 },
+          { date: '2026-09-22', presentCount: 32, absentCount: 2, leaveCount: 1, totalCount: 35 },
+        ];
+      }
+
+      // GET /teacher/attendance?classId=...&sectionId=...&date=...
+      const classId = searchParams.get('classId');
+      const sectionId = searchParams.get('sectionId');
+      let classStudents = db.students;
+      if (classId) {
+        classStudents = classStudents.filter((s) => s.classId === classId || s.class?.id === classId);
+      }
+      if (sectionId) {
+        classStudents = classStudents.filter((s) => s.sectionId === sectionId || s.section?.id === sectionId);
+      }
+
+      const records = classStudents.map((s) => ({
+        studentId: s.id,
+        rollNumber: s.rollNumber || '101',
+        studentName: `${s.firstName} ${s.lastName || ''}`.trim(),
+        status: 'PRESENT',
+        remarks: '',
+      }));
+
+      return {
+        date: searchParams.get('date') || new Date().toISOString().split('T')[0],
+        isHoliday: false,
+        holidayTitle: null,
+        holidayDescription: null,
+        records,
+      };
+    }
+
+    // 6. Teacher Student Detail (e.g. /teacher/students/s-101)
+    if (path.startsWith('/teacher/students/')) {
+      const parts = path.split('/').filter(Boolean);
+      const studentId = parts[parts.length - 1];
+      const found = db.students.find((s) => s.id === studentId) || db.students[0];
+      return {
+        student: found,
+        attendanceStats: {
+          totalRecords: 90,
+          presentCount: 86,
+          absentCount: 3,
+          lateCount: 1,
+          attendanceRate: 95.5,
+          totalDays: 90,
+          presentDays: 86,
+          absentDays: 3,
+          leaveDays: 1,
+          percentage: 95.5,
+        },
+        recentAttendance: [
+          { date: '2026-09-24', status: 'PRESENT' },
+          { date: '2026-09-23', status: 'PRESENT' },
+          { date: '2026-09-22', status: 'ABSENT' },
+        ],
+      };
+    }
+  }
+
   // School Profile
   if (path.startsWith('/schools/me')) {
     if (method === 'PATCH' || method === 'PUT') {
@@ -412,24 +566,13 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
   }
 
-  // Classes & Sections CRUD
-  if (path.startsWith('/classes') || path.startsWith('/teacher/classes')) {
+  // Admin Classes & Sections CRUD
+  if (path.startsWith('/classes')) {
     const parts = path.split('/').filter(Boolean);
-    // e.g. /teacher/classes/c-6/students
-    if (parts.length >= 3 && parts[parts.length - 1] === 'students') {
-      const classId = parts[parts.length - 2];
-      const sectionFilter = searchParams.get('sectionId');
-      let filtered = db.students.filter((s) => s.classId === classId || s.class?.id === classId);
-      if (sectionFilter) {
-        filtered = filtered.filter((s) => s.sectionId === sectionFilter || s.section?.id === sectionFilter);
-      }
-      return filtered;
-    }
-
     const classId = parts[parts.length - 1];
 
     if (method === 'GET') {
-      if (classId && classId !== 'classes' && classId !== 'teacher') {
+      if (classId && classId !== 'classes') {
         const found = db.classes.find((c) => c.id === classId);
         if (found) return found;
       }
@@ -457,8 +600,8 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
   }
 
-  // Students CRUD
-  if (path === '/students' || path.startsWith('/students/') || path.startsWith('/teacher/students/')) {
+  // Admin Students CRUD
+  if (path === '/students' || path.startsWith('/students/')) {
     const parts = path.split('/').filter(Boolean);
     const studentId = parts[parts.length - 1] !== 'students' ? parts[parts.length - 1] : null;
 
@@ -545,7 +688,6 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
         user: { email: `student-${Date.now()}@school.com` },
       };
       db.students.unshift(newStudent);
-      // Update class count
       if (clsObj) {
         clsObj._count.students = (clsObj._count.students || 0) + 1;
       }
@@ -564,7 +706,6 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
       if (studentId && studentId !== 'students') {
         db.students = db.students.filter((s) => s.id !== studentId);
       } else {
-        // Delete all students
         db.students = [];
       }
       saveMockDB(db);
@@ -573,13 +714,9 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
   }
 
   // Teachers CRUD
-  if (path === '/teachers' || path.startsWith('/teachers/') || path === '/teacher/me') {
+  if (path === '/teachers' || path.startsWith('/teachers/')) {
     const parts = path.split('/').filter(Boolean);
     const teacherId = parts[parts.length - 1] !== 'teachers' ? parts[parts.length - 1] : null;
-
-    if (path === '/teacher/me') {
-      return db.teachers[0] || { firstName: 'Rakesh', lastName: 'Sharma' };
-    }
 
     if (method === 'GET') {
       if (teacherId && teacherId !== 'teachers') {
@@ -699,15 +836,6 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
       saveMockDB(db);
       return newExam;
     }
-  }
-
-  // Teacher Summary Stats
-  if (path.startsWith('/teacher/dashboard-summary')) {
-    return {
-      assignedClassesCount: db.classes.length,
-      totalStudentsCount: db.students.length,
-      todayAttendancePercentage: 96,
-    };
   }
 
   // Fallback default for any non-GET modification
