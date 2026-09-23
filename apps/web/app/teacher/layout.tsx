@@ -21,7 +21,7 @@ export default function TeacherLayout({
     );
   }
 
-  if (!user || user.role !== 'TEACHER') {
+  if (!user || (user.role !== 'TEACHER' && user.role !== 'ADMIN')) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
         <div className="glass-panel p-8 rounded-2xl max-w-md w-full text-center space-y-4 border border-red-500/20">

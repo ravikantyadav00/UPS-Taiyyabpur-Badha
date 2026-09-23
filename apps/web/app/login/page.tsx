@@ -51,16 +51,28 @@ export default function LoginPage() {
           <p className="text-sm text-slate-400">
             Sign in to access your school dashboard
           </p>
-          <button
-            type="button"
-            onClick={() => {
-              setIdentifier('admin@school.com');
-              setPassword('AdminSecret123!');
-            }}
-            className="text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 font-medium transition-colors inline-flex items-center gap-1.5 mt-2 cursor-pointer"
-          >
-            <span>⚡ Auto-fill Admin Login</span>
-          </button>
+          <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => {
+                setIdentifier('admin@school.com');
+                setPassword('AdminSecret123!');
+              }}
+              className="text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 font-medium transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>⚡ Auto-fill Admin</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIdentifier('teacher@school.com');
+                setPassword('TeacherSecret123!');
+              }}
+              className="text-xs px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 font-medium transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>👨‍🏫 Auto-fill Teacher</span>
+            </button>
+          </div>
         </div>
 
         {error && (

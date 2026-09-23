@@ -76,12 +76,11 @@ export default function ClassDetailsPage() {
 
   const filteredStudents = students.filter((s) => {
     const term = searchQuery.toLowerCase();
-    return (
-      s.firstName.toLowerCase().includes(term) ||
-      s.lastName.toLowerCase().includes(term) ||
-      s.admissionNumber.toLowerCase().includes(term) ||
-      (s.rollNumber && s.rollNumber.toLowerCase().includes(term))
-    );
+    const fn = s?.firstName?.toLowerCase() || '';
+    const ln = s?.lastName?.toLowerCase() || '';
+    const adm = s?.admissionNumber?.toLowerCase() || '';
+    const roll = s?.rollNumber?.toLowerCase() || '';
+    return fn.includes(term) || ln.includes(term) || adm.includes(term) || roll.includes(term);
   });
 
   const className = students[0]?.class?.name || 'Class';

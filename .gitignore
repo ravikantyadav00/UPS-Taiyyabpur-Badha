@@ -53,3 +53,4 @@ ios/.xcode.env.local
 # Test coverage
 coverage/
 
+.vercel
