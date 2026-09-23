@@ -38,8 +38,11 @@ async function bootstrap() {
         return callback(null, true);
       }
 
-      // In development mode, allow any localhost or 127.0.0.1 port (Expo Web, Next.js dev, etc.)
-      if (nodeEnv !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      // In development mode, allow localhost, 127.0.0.1, or local network IPs (e.g. 192.168.x.x, 10.x.x.x)
+      if (
+        nodeEnv !== 'production' &&
+        /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$/.test(origin)
+      ) {
         return callback(null, true);
       }
 
@@ -84,8 +87,8 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = configService.get<number>('port') || 3001;
-  await app.listen(port);
-  logger.log(`Server running on port ${port}`);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`Server running on port ${port} (listening on 0.0.0.0)`);
   logger.log(`Swagger API Docs available at http://localhost:${port}/api/docs`);
 }
 

@@ -16,7 +16,11 @@ import { UserProfile, NoticeModel, HolidayModel } from './src/types';
 import AdminPortal from './src/components/AdminPortal';
 import TeacherPortal from './src/components/TeacherPortal';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const HOST_IP = '192.168.1.12';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 
+  (Platform.OS === 'web' ? 'http://localhost:3001/api' : 
+   Platform.OS === 'android' ? `http://${HOST_IP}:3001/api` : 
+   `http://${HOST_IP}:3001/api`);
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'home' | 'notices' | 'holidays' | 'portal'>('home');
