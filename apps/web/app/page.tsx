@@ -28,6 +28,8 @@ import {
   GraduationCap
 } from 'lucide-react';
 
+import { apiFetch } from '@/lib/api';
+
 interface Holiday {
   id: string;
   title: string;
@@ -61,46 +63,36 @@ export default function PremiumSchoolHomePage() {
   }, []);
 
   useEffect(() => {
-    async function fetchData() {
+    async function loadData() {
       try {
-        const [holidaysRes, noticesRes] = await Promise.all([
-          fetch('/api/public/holidays'),
-          fetch('/api/public/notices')
+        const [nData, hData] = await Promise.all([
+          apiFetch<Notice[]>('/notices'),
+          apiFetch<Holiday[]>('/holidays')
         ]);
-        if (holidaysRes.ok) {
-          const hData = await holidaysRes.json();
-          const hList = Array.isArray(hData) ? hData : (hData?.data || []);
-          setHolidays(hList);
-        }
-        if (noticesRes.ok) {
-          const nData = await noticesRes.json();
-          const nList = Array.isArray(nData) ? nData : (nData?.data || []);
-          setNotices(nList);
+        if (Array.isArray(nData)) setNotices(nData);
+        if (Array.isArray(hData)) {
+          setHolidays(hData);
         }
       } catch (err) {
-        console.error('Failed to load public data', err);
+        console.error('Failed to load notices/holidays', err);
       } finally {
         setHolidaysLoading(false);
       }
     }
 
-    // Sync with client-side localStorage store for real-time Admin updates
-    if (typeof window !== 'undefined') {
-      try {
-        const raw = localStorage.getItem('ups_taiyyabpur_badha_mock_db_v5');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed.notices && parsed.notices.length > 0) {
-            setNotices(parsed.notices);
-          }
-          if (parsed.holidays && parsed.holidays.length > 0) {
-            setHolidays(parsed.holidays);
-          }
-        }
-      } catch (e) {}
-    }
+    loadData();
 
-    fetchData();
+    const handleStorageChange = () => {
+      loadData();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('mock_db_updated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('mock_db_updated', handleStorageChange);
+    };
   }, []);
 
   const stats = [

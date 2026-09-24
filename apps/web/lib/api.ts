@@ -331,6 +331,7 @@ function saveMockDB(db: MockDB) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(db));
+    window.dispatchEvent(new Event('mock_db_updated'));
   } catch (e) {}
 }
 
