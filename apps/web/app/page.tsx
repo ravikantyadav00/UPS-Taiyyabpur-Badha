@@ -47,12 +47,31 @@ interface Notice {
   description: string;
 }
 
+interface SchoolInfo {
+  id?: string;
+  name?: string;
+  code?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  principalName?: string;
+  udiseCode?: string;
+}
+
 export default function PremiumSchoolHomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [holidaysLoading, setHolidaysLoading] = useState(true);
   const [notices, setNotices] = useState<Notice[]>([]);
+  const [schoolInfo, setSchoolInfo] = useState<SchoolInfo>({
+    name: 'UPS Taiyyabpur Badha',
+    address: 'Vill. Taiyyabpur Badha, Nagal, Saharanpur, Uttar Pradesh',
+    phone: '9058347719',
+    principalName: 'Sanjay Kumar',
+    udiseCode: '09011101603',
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,16 +84,20 @@ export default function PremiumSchoolHomePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [nData, hData] = await Promise.all([
+        const [nData, hData, sData] = await Promise.all([
           apiFetch<Notice[]>('/notices'),
-          apiFetch<Holiday[]>('/holidays')
+          apiFetch<Holiday[]>('/holidays'),
+          apiFetch<SchoolInfo>('/schools/me')
         ]);
         if (Array.isArray(nData)) setNotices(nData);
         if (Array.isArray(hData)) {
           setHolidays(hData);
         }
+        if (sData && typeof sData === 'object') {
+          setSchoolInfo(prev => ({ ...prev, ...sData }));
+        }
       } catch (err) {
-        console.error('Failed to load notices/holidays', err);
+        console.error('Failed to load notices/holidays/school profile', err);
       } finally {
         setHolidaysLoading(false);
       }
@@ -479,8 +502,8 @@ export default function PremiumSchoolHomePage() {
 
               <div className="space-y-1">
                 <span className="text-xs font-bold uppercase tracking-widest text-[#D4A84F]">प्रधानाध्यापक की ओर से</span>
-                <h3 className="text-2xl font-extrabold text-[#0B1F3A]">Sanjay Kumar</h3>
-                <p className="text-xs text-[#64748B] font-semibold">प्रधानाध्यापक / Head • UPS Taiyyabpur Badha</p>
+                <h3 className="text-2xl font-extrabold text-[#0B1F3A]">{schoolInfo.principalName || 'Sanjay Kumar'}</h3>
+                <p className="text-xs text-[#64748B] font-semibold">प्रधानाध्यापक / Head • {schoolInfo.name || 'UPS Taiyyabpur Badha'}</p>
               </div>
 
               <blockquote className="text-[#172033] text-base sm:text-lg leading-relaxed italic max-w-2xl mx-auto">
@@ -739,8 +762,8 @@ export default function PremiumSchoolHomePage() {
                   <div className="text-xs font-bold uppercase tracking-wider text-[#D4A84F] flex items-center gap-1.5">
                     <School className="w-4 h-4" /> School Name
                   </div>
-                  <div className="font-extrabold text-[#0B1F3A] text-base">UPS Taiyyabpur Badha</div>
-                  <div className="text-xs text-[#64748B]">यू.पी.एस. तैय्यबपुर बढ़ा</div>
+                  <div className="font-extrabold text-[#0B1F3A] text-base">{schoolInfo.name || 'UPS Taiyyabpur Badha'}</div>
+                  <div className="text-xs text-[#64748B]">उच्च प्राथमिक विद्यालय (Upper Primary School)</div>
                 </div>
 
                 <div className="p-5 rounded-2xl bg-white border border-[#E2DFD7] space-y-2">
@@ -748,9 +771,7 @@ export default function PremiumSchoolHomePage() {
                     <MapPin className="w-4 h-4" /> Address
                   </div>
                   <div className="font-bold text-[#172033] text-xs leading-relaxed">
-                    Vill. Taiyyabpur Badha,<br />
-                    Nagal, Saharanpur,<br />
-                    Uttar Pradesh
+                    {schoolInfo.address || 'Vill. Taiyyabpur Badha, Nagal, Saharanpur, Uttar Pradesh'}
                   </div>
                 </div>
 
@@ -758,10 +779,10 @@ export default function PremiumSchoolHomePage() {
                   <div className="text-xs font-bold uppercase tracking-wider text-[#D4A84F] flex items-center gap-1.5">
                     <Phone className="w-4 h-4 text-emerald-600" /> Phone
                   </div>
-                  <div className="font-mono font-extrabold text-[#0B1F3A] text-base">9058347719</div>
+                  <div className="font-mono font-extrabold text-[#0B1F3A] text-base">{schoolInfo.phone || '9058347719'}</div>
                   <div className="pt-2">
                     <a
-                      href="tel:9058347719"
+                      href={`tel:${schoolInfo.phone || '9058347719'}`}
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#0B1F3A] text-white hover:bg-[#16325c] transition-colors"
                     >
                       <Phone className="w-3.5 h-3.5 text-[#D4A84F]" /> Call School
@@ -773,7 +794,7 @@ export default function PremiumSchoolHomePage() {
                   <div className="text-xs font-bold uppercase tracking-wider text-[#D4A84F] flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4" /> UDISE Code
                   </div>
-                  <div className="font-mono font-extrabold text-[#0B1F3A] text-base">09011101603</div>
+                  <div className="font-mono font-extrabold text-[#0B1F3A] text-base">{schoolInfo.udiseCode || schoolInfo.code || '09011101603'}</div>
                   <div className="text-xs text-[#64748B]">Classes 1 to 8</div>
                 </div>
 
@@ -791,10 +812,10 @@ export default function PremiumSchoolHomePage() {
           <div className="space-y-1 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2 text-white font-extrabold text-sm">
               <School className="w-4 h-4 text-[#D4A84F]" />
-              <span>UPS Taiyyabpur Badha</span>
+              <span>{schoolInfo.name || 'UPS Taiyyabpur Badha'}</span>
             </div>
-            <p className="text-slate-300">Vill. Taiyyabpur Badha, Nagal, Saharanpur, Uttar Pradesh</p>
-            <p className="font-mono text-[11px] text-[#D4A84F]">UDISE Code: 09011101603 | Phone: 9058347719</p>
+            <p className="text-slate-300">{schoolInfo.address || 'Vill. Taiyyabpur Badha, Nagal, Saharanpur, Uttar Pradesh'}</p>
+            <p className="font-mono text-[11px] text-[#D4A84F]">UDISE Code: {schoolInfo.udiseCode || schoolInfo.code || '09011101603'} | Phone: {schoolInfo.phone || '9058347719'}</p>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-6 font-semibold text-slate-200">
@@ -808,7 +829,7 @@ export default function PremiumSchoolHomePage() {
           </div>
 
           <div className="text-center md:text-right text-[11px] text-slate-400">
-            © 2026 UPS Taiyyabpur Badha. All Rights Reserved.
+            © 2026 {schoolInfo.name || 'UPS Taiyyabpur Badha'}. All Rights Reserved.
           </div>
 
         </div>
