@@ -351,7 +351,14 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
   }
 
   const urlObj = new URL(cleanEndpoint, 'http://dummy.local');
-  const path = urlObj.pathname;
+  let path = urlObj.pathname;
+  
+  // Normalize path by stripping /api/public, /public, /api prefixes for public homepage parity
+  path = path.replace(/^\/api\/public/, '').replace(/^\/public/, '').replace(/^\/api/, '');
+  if (!path.startsWith('/')) {
+    path = '/' + path;
+  }
+
   const searchParams = urlObj.searchParams;
 
   const bodyData = options.body ? JSON.parse(options.body as string) : {};

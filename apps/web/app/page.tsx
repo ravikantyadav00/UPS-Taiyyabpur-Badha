@@ -83,6 +83,23 @@ export default function PremiumSchoolHomePage() {
         setHolidaysLoading(false);
       }
     }
+
+    // Sync with client-side localStorage store for real-time Admin updates
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('ups_taiyyabpur_badha_mock_db_v5');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.notices && parsed.notices.length > 0) {
+            setNotices(parsed.notices);
+          }
+          if (parsed.holidays && parsed.holidays.length > 0) {
+            setHolidays(parsed.holidays);
+          }
+        }
+      } catch (e) {}
+    }
+
     fetchData();
   }, []);
 
