@@ -53,6 +53,18 @@ export default function DashboardPage() {
       }
     }
     loadSchoolData();
+
+    const handleUpdate = () => {
+      loadSchoolData();
+    };
+
+    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('mock_db_updated', handleUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('mock_db_updated', handleUpdate);
+    };
   }, []);
 
   if (loading) {

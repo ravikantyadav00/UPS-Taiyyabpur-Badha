@@ -545,9 +545,21 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     if (method === 'PATCH' || method === 'PUT') {
       db.school = { ...db.school, ...bodyData };
       saveMockDB(db);
-      return db.school;
     }
-    return db.school;
+    const studentCount = Array.isArray(db.students) ? db.students.length : 0;
+    const teacherCount = Array.isArray(db.teachers) ? db.teachers.length : 0;
+    const classCount = Array.isArray(db.classes) ? db.classes.length : 0;
+    const totalUsers = studentCount + teacherCount + 1;
+
+    return {
+      ...db.school,
+      _count: {
+        users: totalUsers,
+        teachers: teacherCount,
+        students: studentCount,
+        classes: classCount,
+      },
+    };
   }
 
   // ==========================================
