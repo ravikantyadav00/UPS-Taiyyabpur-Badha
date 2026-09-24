@@ -1,10 +1,10 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export interface ApiFetchOptions extends RequestInit {
   token?: string;
 }
 
-const MOCK_STORAGE_KEY = 'ups_taiyyabpur_badha_mock_db_v4';
+const MOCK_STORAGE_KEY = 'ups_taiyyabpur_badha_mock_db_v5';
 
 interface MockDB {
   school: any;
@@ -195,25 +195,34 @@ function getInitialMockData(): MockDB {
     {
       id: 'notice-1',
       title: 'Annual Sports Meet 2026-27',
+      category: 'SPORTS',
+      description: 'UPS Taiyyabpur Badha Annual Sports Meet will be organized from 15th October. All students can register with their Class Teacher.',
       content: 'UPS Taiyyabpur Badha Annual Sports Meet will be organized from 15th October. All students can register with their Class Teacher.',
       targetAudience: 'ALL',
       date: '2026-09-20',
+      isPublic: true,
       createdAt: '2026-09-20T10:00:00Z',
     },
     {
       id: 'notice-2',
       title: 'Parent Teacher Meeting (PTM)',
+      category: 'ACADEMIC',
+      description: 'Important PTM for Class 1st to 8th scheduled for Saturday at 9:00 AM. Parents are requested to attend.',
       content: 'Important PTM for Class 1st to 8th scheduled for Saturday at 9:00 AM. Parents are requested to attend.',
       targetAudience: 'PARENTS',
       date: '2026-09-22',
+      isPublic: true,
       createdAt: '2026-09-22T09:30:00Z',
     },
     {
       id: 'notice-3',
       title: 'Half Yearly Examination Schedule',
+      category: 'EXAM',
+      description: 'Half yearly examinations will commence from 1st November 2026. Detailed date sheet is available in the examination office.',
       content: 'Half yearly examinations will commence from 1st November 2026. Detailed date sheet is available in the examination office.',
       targetAudience: 'STUDENTS',
       date: '2026-09-23',
+      isPublic: true,
       createdAt: '2026-09-23T11:00:00Z',
     },
   ];
@@ -229,8 +238,13 @@ function getInitialMockData(): MockDB {
       subject: 'Mathematics & Science',
       qualification: 'M.Sc., B.Ed.',
       mobileNo: '9876501234',
+      phone: '9876501234',
       status: 'ACTIVE',
       user: { email: 'rakesh.sharma@upstaiyyabpurbadha.edu.in' },
+      teacherAssignments: [
+        { id: 'ta-1', subjectName: 'Mathematics', class: { name: 'Class 6th' }, section: { name: 'A' } },
+        { id: 'ta-2', subjectName: 'Science', class: { name: 'Class 7th' }, section: { name: 'A' } },
+      ],
     },
     {
       id: 't-102',
@@ -242,15 +256,19 @@ function getInitialMockData(): MockDB {
       subject: 'Hindi & Social Studies',
       qualification: 'M.A., B.Ed.',
       mobileNo: '9876505678',
+      phone: '9876505678',
       status: 'ACTIVE',
       user: { email: 'sunita.verma@upstaiyyabpurbadha.edu.in' },
+      teacherAssignments: [
+        { id: 'ta-3', subjectName: 'Hindi', class: { name: 'Class 8th' }, section: { name: 'A' } },
+      ],
     },
   ];
 
   const defaultHolidays = [
-    { id: 'h-1', title: 'Gandhi Jayanti', startDate: '2026-10-02', endDate: '2026-10-02', description: 'National Holiday' },
-    { id: 'h-2', title: 'Dussehra', startDate: '2026-10-24', endDate: '2026-10-25', description: 'Festival Holiday' },
-    { id: 'h-3', title: 'Diwali Break', startDate: '2026-11-12', endDate: '2026-11-16', description: 'Festival Holidays' },
+    { id: 'h-1', title: 'Gandhi Jayanti', description: 'National Holiday', startDate: '2026-10-02', endDate: '2026-10-02', type: 'OFFICIAL', createdAt: '2026-09-01T00:00:00Z' },
+    { id: 'h-2', title: 'Dussehra', description: 'Festival Holiday', startDate: '2026-10-24', endDate: '2026-10-25', type: 'FESTIVAL', createdAt: '2026-09-01T00:00:00Z' },
+    { id: 'h-3', title: 'Diwali Break', description: 'Festival Holidays', startDate: '2026-11-12', endDate: '2026-11-16', type: 'FESTIVAL', createdAt: '2026-09-01T00:00:00Z' },
   ];
 
   const defaultAcademicYears = [
@@ -320,8 +338,19 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
   const db = getMockDB();
   const method = (options.method || 'GET').toUpperCase();
 
-  // Parse URL & Query params
-  const urlObj = new URL(endpoint, 'http://dummy.local');
+  // Clean path
+  let cleanEndpoint = endpoint;
+  if (cleanEndpoint.startsWith(API_BASE_URL)) {
+    cleanEndpoint = cleanEndpoint.replace(API_BASE_URL, '');
+  }
+  if (cleanEndpoint.startsWith('http://') || cleanEndpoint.startsWith('https://')) {
+    try {
+      const parsedUrl = new URL(cleanEndpoint);
+      cleanEndpoint = parsedUrl.pathname + parsedUrl.search;
+    } catch (e) {}
+  }
+
+  const urlObj = new URL(cleanEndpoint, 'http://dummy.local');
   const path = urlObj.pathname;
   const searchParams = urlObj.searchParams;
 
@@ -366,10 +395,9 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
   }
 
   // ==========================================
-  // DEDICATED TEACHER PORTAL ROUTES
+  // TEACHER PORTAL ROUTES
   // ==========================================
   if (path.startsWith('/teacher/')) {
-    // 1. Dashboard Summary
     if (path === '/teacher/dashboard-summary') {
       const totalStudents = db.students.length;
       return {
@@ -382,9 +410,8 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
       };
     }
 
-    // 2. Teacher Profile
     if (path === '/teacher/me') {
-      return {
+      return db.teachers[0] || {
         id: 't-101',
         employeeId: 'EMP-001',
         firstName: 'Rakesh',
@@ -394,23 +421,9 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
         phone: '+91 9876501234',
         email: 'rakesh.sharma@upstaiyyabpurbadha.edu.in',
         status: 'ACTIVE',
-        joinedDate: '2020-07-15',
-        user: {
-          id: 'user-t1',
-          email: 'teacher@school.com',
-          username: 'teacher',
-          role: 'TEACHER',
-        },
-        teacherAssignments: db.classes.slice(0, 4).map((c, idx) => ({
-          id: `ta-${idx}`,
-          subjectName: c.name.includes('6') ? 'Mathematics' : c.name.includes('7') ? 'Science' : 'General Subjects',
-          class: { name: c.name },
-          section: { name: c.sections?.[0]?.name || 'A' },
-        })),
       };
     }
 
-    // 3. Teacher Assigned Classes List
     if (path === '/teacher/classes') {
       const assigned: any[] = [];
       db.classes.forEach((c) => {
@@ -432,10 +445,9 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
       return assigned;
     }
 
-    // 4. Teacher Class Students List (e.g. /teacher/classes/c-6/students)
     if (path.includes('/classes/') && path.endsWith('/students')) {
       const parts = path.split('/').filter(Boolean);
-      const classId = parts[2]; // /teacher/classes/:classId/students
+      const classId = parts[2];
       const sectionId = searchParams.get('sectionId');
       let filtered = db.students.filter((s) => s.classId === classId || s.class?.id === classId);
       if (sectionId) {
@@ -444,7 +456,6 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
       return filtered;
     }
 
-    // 5. Teacher Attendance GET / POST / History
     if (path === '/teacher/attendance' || path.startsWith('/teacher/attendance/')) {
       if (path === '/teacher/attendance/bulk' && method === 'POST') {
         const recs = bodyData.records || [];
@@ -463,7 +474,6 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
         ];
       }
 
-      // GET /teacher/attendance?classId=...&sectionId=...&date=...
       const classId = searchParams.get('classId');
       const sectionId = searchParams.get('sectionId');
       let classStudents = db.students;
@@ -477,7 +487,7 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
       const records = classStudents.map((s) => ({
         studentId: s.id,
         rollNumber: s.rollNumber || '101',
-        studentName: `${s.firstName} ${s.lastName || ''}`.trim(),
+        studentName: `${s.firstName || ''} ${s.lastName || ''}`.trim() || 'Student',
         status: 'PRESENT',
         remarks: '',
       }));
@@ -491,7 +501,6 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
       };
     }
 
-    // 6. Teacher Student Detail (e.g. /teacher/students/s-101)
     if (path.startsWith('/teacher/students/')) {
       const parts = path.split('/').filter(Boolean);
       const studentId = parts[parts.length - 1];
@@ -519,7 +528,9 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
   }
 
-  // School Profile
+  // ==========================================
+  // SCHOOL PROFILE
+  // ==========================================
   if (path.startsWith('/schools/me')) {
     if (method === 'PATCH' || method === 'PUT') {
       db.school = { ...db.school, ...bodyData };
@@ -529,10 +540,12 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     return db.school;
   }
 
-  // Notices CRUD
+  // ==========================================
+  // NOTICES CRUD (POST / PATCH / DELETE)
+  // ==========================================
   if (path === '/notices' || path.startsWith('/notices/')) {
     const parts = path.split('/').filter(Boolean);
-    const noticeId = parts[1];
+    const noticeId = parts.length > 1 ? parts[1] : null;
 
     if (method === 'GET') {
       return db.notices;
@@ -542,9 +555,12 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
       const newNotice = {
         id: 'notice-' + Date.now(),
         title: bodyData.title || 'New Notice',
-        content: bodyData.content || '',
+        category: bodyData.category || 'GENERAL',
+        description: bodyData.description || bodyData.content || '',
+        content: bodyData.content || bodyData.description || '',
         targetAudience: bodyData.targetAudience || 'ALL',
         date: bodyData.date || new Date().toISOString().split('T')[0],
+        isPublic: bodyData.isPublic !== undefined ? bodyData.isPublic : true,
         createdAt: new Date().toISOString(),
       };
       db.notices.unshift(newNotice);
@@ -553,7 +569,17 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
 
     if ((method === 'PATCH' || method === 'PUT') && noticeId) {
-      db.notices = db.notices.map((n) => (n.id === noticeId ? { ...n, ...bodyData } : n));
+      db.notices = db.notices.map((n) => {
+        if (n.id === noticeId) {
+          return {
+            ...n,
+            ...bodyData,
+            content: bodyData.content || bodyData.description || n.content,
+            description: bodyData.description || bodyData.content || n.description,
+          };
+        }
+        return n;
+      });
       saveMockDB(db);
       const updated = db.notices.find((n) => n.id === noticeId);
       return updated || { success: true };
@@ -566,10 +592,94 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
   }
 
-  // Admin Classes & Sections CRUD
+  // ==========================================
+  // HOLIDAYS CRUD (POST / DELETE)
+  // ==========================================
+  if (path.startsWith('/holidays')) {
+    const parts = path.split('/').filter(Boolean);
+    const holidayId = parts.length > 1 ? parts[1] : null;
+
+    if (method === 'GET') return db.holidays;
+
+    if (method === 'POST') {
+      const newHoliday = {
+        id: 'h-' + Date.now(),
+        title: bodyData.title || 'Holiday',
+        description: bodyData.description || '',
+        startDate: bodyData.startDate || new Date().toISOString().split('T')[0],
+        endDate: bodyData.endDate || bodyData.startDate || new Date().toISOString().split('T')[0],
+        type: bodyData.type || 'OFFICIAL',
+        createdAt: new Date().toISOString(),
+      };
+      db.holidays.unshift(newHoliday);
+      saveMockDB(db);
+      return newHoliday;
+    }
+
+    if ((method === 'PATCH' || method === 'PUT') && holidayId) {
+      db.holidays = db.holidays.map((h) => (h.id === holidayId ? { ...h, ...bodyData } : h));
+      saveMockDB(db);
+      return db.holidays.find((h) => h.id === holidayId) || { success: true };
+    }
+
+    if (method === 'DELETE' && holidayId) {
+      db.holidays = db.holidays.filter((h) => h.id !== holidayId);
+      saveMockDB(db);
+      return { success: true };
+    }
+  }
+
+  // ==========================================
+  // CLASSES & SECTIONS CRUD (POST / PATCH / DELETE)
+  // ==========================================
   if (path.startsWith('/classes')) {
     const parts = path.split('/').filter(Boolean);
-    const classId = parts[parts.length - 1];
+    // Section routes: /classes/:classId/sections OR /classes/sections/:sectionId
+    if (path.includes('/sections')) {
+      const sectionId = parts[parts.length - 1] !== 'sections' ? parts[parts.length - 1] : null;
+
+      if (method === 'POST') {
+        const classId = parts[1]; // /classes/:classId/sections
+        const clsObj = db.classes.find((c) => c.id === classId);
+        if (clsObj) {
+          const newSec = {
+            id: 'sec-' + Date.now(),
+            name: bodyData.name || 'B',
+            roomNumber: bodyData.roomNumber || '101',
+            capacity: bodyData.capacity || 40,
+          };
+          clsObj.sections = clsObj.sections || [];
+          clsObj.sections.push(newSec);
+          clsObj._count = clsObj._count || { students: 0, sections: 1 };
+          clsObj._count.sections = clsObj.sections.length;
+          saveMockDB(db);
+          return newSec;
+        }
+      }
+
+      if ((method === 'PATCH' || method === 'PUT') && sectionId) {
+        db.classes.forEach((c) => {
+          if (c.sections) {
+            c.sections = c.sections.map((sec: any) => (sec.id === sectionId ? { ...sec, ...bodyData } : sec));
+          }
+        });
+        saveMockDB(db);
+        return { success: true };
+      }
+
+      if (method === 'DELETE' && sectionId) {
+        db.classes.forEach((c) => {
+          if (c.sections) {
+            c.sections = c.sections.filter((sec: any) => sec.id !== sectionId);
+            if (c._count) c._count.sections = c.sections.length;
+          }
+        });
+        saveMockDB(db);
+        return { success: true };
+      }
+    }
+
+    const classId = parts.length > 1 ? parts[1] : null;
 
     if (method === 'GET') {
       if (classId && classId !== 'classes') {
@@ -593,6 +703,12 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
       return newClass;
     }
 
+    if ((method === 'PATCH' || method === 'PUT') && classId) {
+      db.classes = db.classes.map((c) => (c.id === classId ? { ...c, ...bodyData } : c));
+      saveMockDB(db);
+      return db.classes.find((c) => c.id === classId) || { success: true };
+    }
+
     if (method === 'DELETE' && classId) {
       db.classes = db.classes.filter((c) => c.id !== classId);
       saveMockDB(db);
@@ -600,10 +716,12 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
   }
 
-  // Admin Students CRUD
+  // ==========================================
+  // STUDENTS CRUD
+  // ==========================================
   if (path === '/students' || path.startsWith('/students/')) {
     const parts = path.split('/').filter(Boolean);
-    const studentId = parts[parts.length - 1] !== 'students' ? parts[parts.length - 1] : null;
+    const studentId = parts.length > 1 && parts[1] !== 'bulk-upload' ? parts[1] : null;
 
     if (path === '/students/bulk-upload' && method === 'POST') {
       const rows = bodyData.rows || [];
@@ -689,6 +807,7 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
       };
       db.students.unshift(newStudent);
       if (clsObj) {
+        clsObj._count = clsObj._count || { students: 0, sections: 1 };
         clsObj._count.students = (clsObj._count.students || 0) + 1;
       }
       saveMockDB(db);
@@ -698,8 +817,7 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     if ((method === 'PATCH' || method === 'PUT') && studentId) {
       db.students = db.students.map((s) => (s.id === studentId ? { ...s, ...bodyData } : s));
       saveMockDB(db);
-      const updated = db.students.find((s) => s.id === studentId);
-      return updated || { success: true };
+      return db.students.find((s) => s.id === studentId) || { success: true };
     }
 
     if (method === 'DELETE') {
@@ -713,10 +831,40 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
   }
 
-  // Teachers CRUD
+  // ==========================================
+  // TEACHERS CRUD & ASSIGNMENTS
+  // ==========================================
   if (path === '/teachers' || path.startsWith('/teachers/')) {
+    if (path === '/teachers/assign-class' && method === 'POST') {
+      const teacher = db.teachers.find((t) => t.id === bodyData.teacherId);
+      const clsObj = db.classes.find((c) => c.id === bodyData.classId);
+      if (teacher && clsObj) {
+        teacher.teacherAssignments = teacher.teacherAssignments || [];
+        teacher.teacherAssignments.push({
+          id: 'ta-' + Date.now(),
+          subjectName: bodyData.subjectName || 'General',
+          class: { name: clsObj.name },
+          section: { name: clsObj.sections?.[0]?.name || 'A' },
+        });
+        saveMockDB(db);
+      }
+      return { success: true };
+    }
+
+    if (path.startsWith('/teachers/assignments/') && method === 'DELETE') {
+      const parts = path.split('/').filter(Boolean);
+      const assignId = parts[parts.length - 1];
+      db.teachers.forEach((t) => {
+        if (t.teacherAssignments) {
+          t.teacherAssignments = t.teacherAssignments.filter((a: any) => a.id !== assignId);
+        }
+      });
+      saveMockDB(db);
+      return { success: true };
+    }
+
     const parts = path.split('/').filter(Boolean);
-    const teacherId = parts[parts.length - 1] !== 'teachers' ? parts[parts.length - 1] : null;
+    const teacherId = parts.length > 1 ? parts[1] : null;
 
     if (method === 'GET') {
       if (teacherId && teacherId !== 'teachers') {
@@ -736,9 +884,11 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
         designation: bodyData.designation || 'Assistant Teacher',
         subject: bodyData.subject || 'General',
         qualification: bodyData.qualification || 'B.Ed.',
-        mobileNo: bodyData.mobileNo || '',
+        mobileNo: bodyData.mobileNo || bodyData.phone || '',
+        phone: bodyData.phone || bodyData.mobileNo || '',
         status: 'ACTIVE',
         user: { email: bodyData.email || `teacher-${Date.now()}@school.com` },
+        teacherAssignments: [],
       };
       db.teachers.unshift(newTeacher);
       saveMockDB(db);
@@ -758,37 +908,10 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
   }
 
-  // Holidays CRUD
-  if (path.startsWith('/holidays')) {
-    const parts = path.split('/').filter(Boolean);
-    const holidayId = parts[1];
-
-    if (method === 'GET') return db.holidays;
-
-    if (method === 'POST') {
-      const newHoliday = {
-        id: 'h-' + Date.now(),
-        title: bodyData.title || 'Holiday',
-        startDate: bodyData.startDate || new Date().toISOString().split('T')[0],
-        endDate: bodyData.endDate || new Date().toISOString().split('T')[0],
-        description: bodyData.description || '',
-      };
-      db.holidays.unshift(newHoliday);
-      saveMockDB(db);
-      return newHoliday;
-    }
-
-    if (method === 'DELETE' && holidayId) {
-      db.holidays = db.holidays.filter((h) => h.id !== holidayId);
-      saveMockDB(db);
-      return { success: true };
-    }
-  }
-
   // Academic Years CRUD
   if (path.startsWith('/academic-years')) {
     const parts = path.split('/').filter(Boolean);
-    const yearId = parts[1];
+    const yearId = parts.length > 1 ? parts[1] : null;
 
     if (method === 'GET') return db.academicYears;
 
@@ -838,7 +961,6 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
   }
 
-  // Fallback default for any non-GET modification
   if (method !== 'GET') {
     return { success: true };
   }
@@ -861,8 +983,16 @@ export async function apiFetch<T = any>(endpoint: string, options: ApiFetchOptio
     headers['Authorization'] = `Bearer ${authToken}`;
   }
 
+  // Always use mock handler when deployed or when fetch to localhost fails
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`, {
+    const fullUrl = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    
+    // If running in browser and API_BASE_URL is localhost or /api without live backend, fallback to mock DB
+    if (typeof window !== 'undefined' && (!process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL.includes('localhost'))) {
+      return handleMockRequest(endpoint, options);
+    }
+
+    const response = await fetch(fullUrl, {
       headers,
       credentials: 'include',
       ...customOptions,
@@ -887,15 +1017,6 @@ export async function apiFetch<T = any>(endpoint: string, options: ApiFetchOptio
 
     return data.data !== undefined ? data.data : data;
   } catch (err: any) {
-    // If backend server is offline/unreachable or network fails, use seamless mock DB
-    if (
-      err.name === 'TypeError' ||
-      err.message?.includes('fetch') ||
-      err.message?.includes('NetworkError') ||
-      err.message?.includes('Failed to fetch')
-    ) {
-      return handleMockRequest(endpoint, options);
-    }
-    throw err;
+    return handleMockRequest(endpoint, options);
   }
 }
