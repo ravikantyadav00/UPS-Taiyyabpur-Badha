@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
-import { Award, Plus, FileSpreadsheet, UserCheck, BookOpen, Loader2, AlertCircle, Eye, CheckCircle2 } from 'lucide-react';
+import { Award, Plus, FileSpreadsheet, UserCheck, BookOpen, Loader2, AlertCircle, Eye, CheckCircle2, Trash2 } from 'lucide-react';
 
 interface ExamSubject {
   id: string;
@@ -23,7 +23,7 @@ interface Exam {
   endDate: string;
   status: string;
   academicYear?: { name: string };
-  examSubjects: ExamSubject[];
+  examSubjects?: ExamSubject[];
 }
 
 interface Student {
@@ -93,8 +93,8 @@ export default function ExamsPage() {
         apiFetch<Exam[]>('/exams'),
         apiFetch<Student[]>('/students'),
       ]);
-      setExams(examsData);
-      setStudents(studentsData);
+      setExams(Array.isArray(examsData) ? examsData : []);
+      setStudents(Array.isArray(studentsData) ? studentsData : []);
     } catch (err: any) {
       setError(err.message || 'Failed to load exams');
     } finally {
@@ -104,6 +104,18 @@ export default function ExamsPage() {
 
   useEffect(() => {
     loadData();
+
+    const handleUpdate = () => {
+      loadData();
+    };
+
+    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('mock_db_updated', handleUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('mock_db_updated', handleUpdate);
+    };
   }, []);
 
   const handleCreateExam = async (e: React.FormEvent) => {
@@ -113,7 +125,7 @@ export default function ExamsPage() {
     setSubmitting(true);
     try {
       const years = await apiFetch<any[]>('/academic-years');
-      const currentYear = years.find((y) => y.isCurrent) || years[0];
+      const currentYear = (Array.isArray(years) ? years.find((y) => y.isCurrent) : null) || { id: 'ay-1' };
 
       await apiFetch('/exams', {
         method: 'POST',
@@ -133,6 +145,16 @@ export default function ExamsPage() {
       alert(err.message || 'Failed to create exam');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDeleteExam = async (examId: string, examName: string) => {
+    if (!confirm(`Are you sure you want to delete examination "${examName}"?`)) return;
+    try {
+      await apiFetch(`/exams/${examId}`, { method: 'DELETE' });
+      await loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete exam');
     }
   };
 
@@ -236,9 +258,18 @@ export default function ExamsPage() {
                     <h3 className="text-lg font-bold text-slate-100">{exam.name}</h3>
                     <p className="text-xs text-purple-400 font-mono">Term: {exam.term || 'N/A'}</p>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-400 text-xs font-semibold border border-purple-500/20">
-                    {exam.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-400 text-xs font-semibold border border-purple-500/20">
+                      {exam.status}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteExam(exam.id, exam.name)}
+                      className="p-1 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800 transition-colors"
+                      title="Delete Exam"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="text-xs text-slate-400 space-y-1 py-2 border-t border-b border-slate-800/80">
@@ -254,10 +285,10 @@ export default function ExamsPage() {
                 {/* Exam Subjects Table */}
                 <div>
                   <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Subject Papers ({exam.examSubjects.length})
+                    Subject Papers ({(exam.examSubjects || []).length})
                   </h4>
                   <div className="space-y-2">
-                    {exam.examSubjects.map((sub) => (
+                    {(exam.examSubjects || []).map((sub) => (
                       <div
                         key={sub.id}
                         className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs"

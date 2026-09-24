@@ -279,12 +279,86 @@ function getInitialMockData(): MockDB {
   const defaultExams = [
     {
       id: 'exam-1',
-      name: 'Half Yearly Exam 2026',
-      academicYearId: 'ay-1',
+      name: 'Half Yearly Examination 2026-27',
+      term: 'Mid-Term',
+      startDate: '2026-11-01',
+      endDate: '2026-11-15',
       status: 'UPCOMING',
-      subjects: [
-        { id: 'sub-1', name: 'Mathematics', classId: 'c-6', maxMarks: 100, examDate: '2026-11-01' },
-        { id: 'sub-2', name: 'Science', classId: 'c-6', maxMarks: 100, examDate: '2026-11-03' },
+      academicYearId: 'ay-1',
+      academicYear: { name: '2026-2027' },
+      examSubjects: [
+        {
+          id: 'sub-1',
+          classId: 'c-6',
+          subjectName: 'Mathematics',
+          maxMarks: 100,
+          passMarks: 33,
+          examDate: '2026-11-01',
+          class: { name: 'Class 6th' },
+          _count: { examResults: 40 },
+        },
+        {
+          id: 'sub-2',
+          classId: 'c-6',
+          subjectName: 'Science',
+          maxMarks: 100,
+          passMarks: 33,
+          examDate: '2026-11-03',
+          class: { name: 'Class 6th' },
+          _count: { examResults: 40 },
+        },
+        {
+          id: 'sub-3',
+          classId: 'c-7',
+          subjectName: 'Hindi',
+          maxMarks: 100,
+          passMarks: 33,
+          examDate: '2026-11-05',
+          class: { name: 'Class 7th' },
+          _count: { examResults: 38 },
+        },
+        {
+          id: 'sub-4',
+          classId: 'c-8',
+          subjectName: 'Social Studies',
+          maxMarks: 100,
+          passMarks: 33,
+          examDate: '2026-11-08',
+          class: { name: 'Class 8th' },
+          _count: { examResults: 42 },
+        },
+      ],
+    },
+    {
+      id: 'exam-2',
+      name: 'Annual Examination 2026-27',
+      term: 'Final Term',
+      startDate: '2027-03-01',
+      endDate: '2027-03-15',
+      status: 'SCHEDULED',
+      academicYearId: 'ay-1',
+      academicYear: { name: '2026-2027' },
+      examSubjects: [
+        {
+          id: 'sub-5',
+          classId: 'c-6',
+          subjectName: 'Mathematics',
+          maxMarks: 100,
+          passMarks: 33,
+          examDate: '2027-03-01',
+          class: { name: 'Class 6th' },
+          _count: { examResults: 0 },
+        },
+        {
+          id: 'sub-6',
+          classId: 'c-8',
+          subjectName: 'Science & Computer',
+          maxMarks: 100,
+          passMarks: 33,
+          examDate: '2027-03-03',
+          class: { name: 'Class 8th' },
+          _count: { examResults: 0 },
+        },
       ],
     },
   ];
@@ -1002,26 +1076,101 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
   }
 
-  // Exams CRUD
-  if (path.startsWith('/exams')) {
-    if (method === 'GET') return db.exams;
+  // Exams CRUD & Report Card Generator
+  if (path === '/exams' || path.startsWith('/exams/')) {
+    const parts = path.split('/').filter(Boolean);
+
+    if (path.includes('/report-card/')) {
+      const studentId = parts[parts.length - 1];
+      const studentObj = db.students.find((s) => s.id === studentId) || db.students[0] || {
+        id: studentId,
+        firstName: 'Student',
+        lastName: 'Name',
+        admissionNumber: 'SR-2026-001',
+        class: { name: 'Class 6th' },
+        section: { name: 'A' },
+      };
+
+      const results = [
+        { examName: 'Half Yearly Exam 2026-27', term: 'Mid-Term', subjectName: 'Mathematics', maxMarks: 100, passMarks: 33, marksObtained: 88, grade: 'A', remarks: 'Excellent performance' },
+        { examName: 'Half Yearly Exam 2026-27', term: 'Mid-Term', subjectName: 'Science', maxMarks: 100, passMarks: 33, marksObtained: 92, grade: 'A+', remarks: 'Outstanding' },
+        { examName: 'Half Yearly Exam 2026-27', term: 'Mid-Term', subjectName: 'Hindi', maxMarks: 100, passMarks: 33, marksObtained: 84, grade: 'A', remarks: 'Very Good' },
+        { examName: 'Half Yearly Exam 2026-27', term: 'Mid-Term', subjectName: 'Social Studies', maxMarks: 100, passMarks: 33, marksObtained: 78, grade: 'B+', remarks: 'Good effort' },
+      ];
+
+      const totalObtained = results.reduce((sum, r) => sum + r.marksObtained, 0);
+      const totalMax = results.reduce((sum, r) => sum + r.maxMarks, 0);
+      const percentage = Number(((totalObtained / totalMax) * 100).toFixed(1));
+      const overallGrade = percentage >= 90 ? 'A+' : percentage >= 80 ? 'A' : percentage >= 70 ? 'B+' : percentage >= 60 ? 'B' : 'C';
+
+      return {
+        student: {
+          id: studentObj.id,
+          name: `${studentObj.firstName || ''} ${studentObj.lastName || ''}`.trim() || 'Student',
+          admissionNumber: studentObj.admissionNumber || 'SR-2026-001',
+          className: studentObj.class?.name || 'Class 6th',
+          sectionName: studentObj.section?.name || 'A',
+        },
+        results,
+        summary: {
+          totalObtained,
+          totalMax,
+          percentage,
+          overallGrade,
+        },
+      };
+    }
+
+    if (method === 'GET') {
+      const normalizedExams = (db.exams || []).map((e) => ({
+        ...e,
+        examSubjects: Array.isArray(e.examSubjects)
+          ? e.examSubjects
+          : Array.isArray(e.subjects)
+          ? e.subjects.map((s: any) => ({
+              ...s,
+              subjectName: s.subjectName || s.name || 'Subject',
+              maxMarks: s.maxMarks || 100,
+              passMarks: s.passMarks || 33,
+              class: s.class || { name: 'Class 6th' },
+            }))
+          : [],
+      }));
+      return normalizedExams;
+    }
 
     if (method === 'POST') {
       if (path.endsWith('/marks')) {
         db.marks = { ...db.marks, ...bodyData };
         saveMockDB(db);
-        return { success: true };
+        return { success: true, message: 'Marks recorded successfully' };
       }
+
       const newExam = {
         id: 'exam-' + Date.now(),
-        name: bodyData.name || 'New Exam',
+        name: bodyData.name || 'New Examination',
+        term: bodyData.term || 'Mid-Term',
+        startDate: bodyData.startDate || new Date().toISOString().split('T')[0],
+        endDate: bodyData.endDate || new Date().toISOString().split('T')[0],
         academicYearId: bodyData.academicYearId || 'ay-1',
+        academicYear: { name: '2026-2027' },
         status: 'UPCOMING',
-        subjects: bodyData.subjects || [],
+        examSubjects: [
+          { id: 'sub-' + Date.now() + '-1', classId: 'c-6', subjectName: 'Mathematics', maxMarks: 100, passMarks: 33, examDate: bodyData.startDate, class: { name: 'Class 6th' } },
+          { id: 'sub-' + Date.now() + '-2', classId: 'c-6', subjectName: 'Science', maxMarks: 100, passMarks: 33, examDate: bodyData.startDate, class: { name: 'Class 6th' } },
+          { id: 'sub-' + Date.now() + '-3', classId: 'c-7', subjectName: 'Hindi', maxMarks: 100, passMarks: 33, examDate: bodyData.startDate, class: { name: 'Class 7th' } },
+        ],
       };
-      db.exams.push(newExam);
+      db.exams.unshift(newExam);
       saveMockDB(db);
       return newExam;
+    }
+
+    if (method === 'DELETE' && parts.length > 1) {
+      const examId = parts[1];
+      db.exams = db.exams.filter((e) => e.id !== examId);
+      saveMockDB(db);
+      return { success: true };
     }
   }
 
