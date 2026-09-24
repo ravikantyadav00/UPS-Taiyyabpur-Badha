@@ -400,6 +400,32 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     };
   }
 
+  if (path.startsWith('/auth/change-password') || path.startsWith('/users/change-password')) {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    const userObj = saved ? JSON.parse(saved) : { id: 'admin-1', username: 'admin', email: 'admin@school.com', role: 'ADMIN' };
+    userObj.password = bodyData.newPassword || bodyData.password;
+    if (bodyData.email) userObj.email = bodyData.email;
+    if (bodyData.username) userObj.username = bodyData.username;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(userObj));
+    }
+    saveMockDB(db);
+    return { success: true, message: 'Admin password changed successfully' };
+  }
+
+  if (path.startsWith('/auth/profile') || path.startsWith('/users/me')) {
+    if (method === 'PATCH' || method === 'PUT') {
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+      const userObj = saved ? JSON.parse(saved) : { id: 'admin-1', username: 'admin', email: 'admin@school.com', role: 'ADMIN' };
+      const updatedUser = { ...userObj, ...bodyData };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+      saveMockDB(db);
+      return updatedUser;
+    }
+  }
+
   if (path.startsWith('/auth/logout')) {
     return { success: true };
   }
@@ -857,6 +883,22 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
   // TEACHERS CRUD & ASSIGNMENTS
   // ==========================================
   if (path === '/teachers' || path.startsWith('/teachers/')) {
+    if (path.includes('/reset-password') && method === 'POST') {
+      const parts = path.split('/').filter(Boolean);
+      const teacherId = parts[1];
+      db.teachers = db.teachers.map((t) => {
+        if (t.id === teacherId) {
+          return {
+            ...t,
+            password: bodyData.password,
+            user: { ...(t.user || {}), password: bodyData.password },
+          };
+        }
+        return t;
+      });
+      saveMockDB(db);
+      return { success: true, message: 'Teacher password reset successfully' };
+    }
     if (path === '/teachers/assign-class' && method === 'POST') {
       const teacher = db.teachers.find((t) => t.id === bodyData.teacherId);
       const clsObj = db.classes.find((c) => c.id === bodyData.classId);

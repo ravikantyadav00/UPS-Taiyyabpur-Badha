@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
-import { Users, Plus, Edit3, Trash2, Mail, Phone, BookOpen, Loader2, AlertCircle, Calendar, Sparkles, CheckCircle2, UserCheck } from 'lucide-react';
+import { Users, Plus, Edit3, Trash2, Mail, Phone, BookOpen, Loader2, AlertCircle, Calendar, Sparkles, CheckCircle2, UserCheck, Key } from 'lucide-react';
 
 interface TeacherAssignment {
   id: string;
@@ -47,7 +47,12 @@ export default function TeachersPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+
+  // Reset Password inputs
+  const [newTeacherPassword, setNewTeacherPassword] = useState('');
+  const [confirmTeacherPassword, setConfirmTeacherPassword] = useState('');
 
   // Onboard / Edit Teacher Form inputs
   const [email, setEmail] = useState('');
@@ -126,6 +131,8 @@ export default function TeachersPage() {
     setSelectedTeacher(teacher);
     setFirstName(teacher.firstName);
     setLastName(teacher.lastName);
+    setEmployeeId(teacher.employeeId || '');
+    setEmail(teacher.email || '');
     setPhone(teacher.phone || '');
     setQualification(teacher.qualification || '');
     setDesignation(teacher.designation || '');
@@ -143,6 +150,8 @@ export default function TeachersPage() {
         body: JSON.stringify({
           firstName: firstName.trim(),
           lastName: lastName.trim(),
+          employeeId: employeeId.trim(),
+          email: email.trim(),
           phone: phone.trim() || undefined,
           qualification: qualification.trim() || undefined,
           designation: designation.trim() || undefined,
@@ -154,6 +163,42 @@ export default function TeachersPage() {
       await loadData();
     } catch (err: any) {
       alert(err.message || 'Failed to update teacher');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleOpenResetPassword = (teacher: Teacher) => {
+    setSelectedTeacher(teacher);
+    setNewTeacherPassword('');
+    setConfirmTeacherPassword('');
+    setShowResetPasswordModal(true);
+  };
+
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTeacher) return;
+
+    if (newTeacherPassword.length < 6) {
+      alert('Password must be at least 6 characters long.');
+      return;
+    }
+    if (newTeacherPassword !== confirmTeacherPassword) {
+      alert('Passwords do not match.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await apiFetch(`/teachers/${selectedTeacher.id}/reset-password`, {
+        method: 'POST',
+        body: JSON.stringify({ password: newTeacherPassword }),
+      });
+      setShowResetPasswordModal(false);
+      setSuccessMsg(`Password for teacher "${selectedTeacher.firstName} ${selectedTeacher.lastName}" has been reset successfully!`);
+      await loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to reset teacher password');
     } finally {
       setSubmitting(false);
     }
@@ -309,6 +354,14 @@ export default function TeachersPage() {
                     <span className="text-xs text-emerald-400 font-mono font-semibold">{teacher.employeeId}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleOpenResetPassword(teacher)}
+                      className="p-1.5 text-amber-400 hover:text-amber-300 rounded-lg hover:bg-slate-800 transition-all flex items-center gap-1 text-[11px] font-semibold px-2 border border-slate-800 hover:border-amber-500/30"
+                      title="Reset Teacher Password"
+                    >
+                      <Key className="w-3.5 h-3.5" />
+                      <span>Password</span>
+                    </button>
                     <button
                       onClick={() => handleOpenEdit(teacher)}
                       className="p-1.5 text-slate-400 hover:text-cyan-400 rounded-lg hover:bg-slate-800 transition-all"
@@ -722,6 +775,93 @@ export default function TeachersPage() {
                     <>
                       <BookOpen className="w-4 h-4" />
                       <span>Assign Class Now</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Teacher Password Modal */}
+      {showResetPasswordModal && selectedTeacher && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="w-full max-w-md glass-panel p-6 rounded-2xl border border-amber-500/20 space-y-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <Key className="w-5 h-5 text-amber-400" />
+                <span>Reset Teacher Password</span>
+              </h2>
+              <button
+                onClick={() => setShowResetPasswordModal(false)}
+                className="text-slate-400 hover:text-slate-200 text-sm font-semibold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1 text-xs">
+              <p className="text-slate-100 font-bold text-sm">
+                {selectedTeacher.firstName} {selectedTeacher.lastName}
+              </p>
+              <p className="text-amber-400 font-mono font-semibold">EMP ID: {selectedTeacher.employeeId}</p>
+              <p className="text-slate-400">Email: {selectedTeacher.email}</p>
+            </div>
+
+            <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  New Password <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="Enter new password (min. 6 chars)"
+                  value={newTeacherPassword}
+                  onChange={(e) => setNewTeacherPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Confirm New Password <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="Re-enter new password"
+                  value={confirmTeacherPassword}
+                  onChange={(e) => setConfirmTeacherPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowResetPasswordModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-amber-500/20"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Updating Password...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Key className="w-4 h-4" />
+                      <span>Reset Password</span>
                     </>
                   )}
                 </button>

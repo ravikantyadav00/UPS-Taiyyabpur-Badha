@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
-import { Building2, Edit, Mail, Phone, Globe, MapPin, User, Users, GraduationCap, BookOpen, Loader2, AlertCircle, Save } from 'lucide-react';
+import { Building2, Edit, Mail, Phone, Globe, MapPin, User, Users, GraduationCap, BookOpen, Loader2, AlertCircle, Save, Key, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 interface SchoolProfile {
   id: string;
@@ -38,10 +38,28 @@ export default function SchoolProfilePage() {
   const [principalName, setPrincipalName] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Admin Account & Password State
+  const [showAdminPasswordModal, setShowAdminPasswordModal] = useState(false);
+  const [adminUsername, setAdminUsername] = useState('admin');
+  const [adminEmail, setAdminEmail] = useState('admin@school.com');
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState('');
+  const [adminSuccessMsg, setAdminSuccessMsg] = useState<string | null>(null);
+
   const loadSchool = async () => {
     try {
       const data = await apiFetch<SchoolProfile>('/schools/me');
       setSchool(data);
+      if (typeof window !== 'undefined') {
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+          try {
+            const u = JSON.parse(savedUser);
+            if (u.username) setAdminUsername(u.username);
+            if (u.email) setAdminEmail(u.email);
+          } catch (e) {}
+        }
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load school profile');
     } finally {
@@ -100,6 +118,38 @@ export default function SchoolProfilePage() {
     }
   };
 
+  const handleAdminPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newAdminPassword.length < 6) {
+      alert('Password must be at least 6 characters long.');
+      return;
+    }
+    if (newAdminPassword !== confirmAdminPassword) {
+      alert('Passwords do not match.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await apiFetch('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({
+          username: adminUsername.trim(),
+          email: adminEmail.trim(),
+          password: newAdminPassword,
+        }),
+      });
+      setShowAdminPasswordModal(false);
+      setAdminSuccessMsg('Admin login credentials & password updated successfully!');
+      setNewAdminPassword('');
+      setConfirmAdminPassword('');
+    } catch (err: any) {
+      alert(err.message || 'Failed to update admin credentials');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 text-slate-400 gap-3 min-h-[60vh]">
@@ -135,6 +185,13 @@ export default function SchoolProfilePage() {
         <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-3 text-sm">
           <AlertCircle className="w-5 h-5" />
           <span>{error}</span>
+        </div>
+      )}
+
+      {adminSuccessMsg && (
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-3 text-sm">
+          <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+          <span>{adminSuccessMsg}</span>
         </div>
       )}
 
@@ -192,31 +249,64 @@ export default function SchoolProfilePage() {
             </div>
           </div>
 
-          {/* Quick Metrics Summary */}
-          <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
-            <h3 className="text-base font-bold text-slate-100 uppercase tracking-wider">Institution Stats</h3>
-            <div className="space-y-3">
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                <span className="text-xs text-slate-400 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-cyan-400" />
-                  Faculty Members
-                </span>
-                <span className="font-bold text-slate-100 text-sm">{school._count?.teachers || 0}</span>
+          {/* Quick Metrics & Admin Credentials Column */}
+          <div className="space-y-6">
+            <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+              <h3 className="text-base font-bold text-slate-100 uppercase tracking-wider">Institution Stats</h3>
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                  <span className="text-xs text-slate-400 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-cyan-400" />
+                    Faculty Members
+                  </span>
+                  <span className="font-bold text-slate-100 text-sm">{school._count?.teachers || 0}</span>
+                </div>
+                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                  <span className="text-xs text-slate-400 flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-amber-400" />
+                    Enrolled Students
+                  </span>
+                  <span className="font-bold text-slate-100 text-sm">{school._count?.students || 0}</span>
+                </div>
+                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                  <span className="text-xs text-slate-400 flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-purple-400" />
+                    Academic Classes
+                  </span>
+                  <span className="font-bold text-slate-100 text-sm">{school._count?.classes || 0}</span>
+                </div>
               </div>
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                <span className="text-xs text-slate-400 flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-amber-400" />
-                  Enrolled Students
-                </span>
-                <span className="font-bold text-slate-100 text-sm">{school._count?.students || 0}</span>
+            </div>
+
+            {/* Admin Account & Password Card */}
+            <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+              <h3 className="text-base font-bold text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                <span>Admin Login & Password</span>
+              </h3>
+              
+              <div className="space-y-3 text-xs">
+                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex justify-between items-center">
+                  <span className="text-slate-400 font-semibold">Username:</span>
+                  <span className="font-mono font-bold text-cyan-400">{adminUsername}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex justify-between items-center">
+                  <span className="text-slate-400 font-semibold">Email:</span>
+                  <span className="font-mono text-slate-200">{adminEmail}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex justify-between items-center">
+                  <span className="text-slate-400 font-semibold">Role:</span>
+                  <span className="font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">ADMINISTRATOR</span>
+                </div>
               </div>
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                <span className="text-xs text-slate-400 flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-purple-400" />
-                  Academic Classes
-                </span>
-                <span className="font-bold text-slate-100 text-sm">{school._count?.classes || 0}</span>
-              </div>
+
+              <button
+                onClick={() => setShowAdminPasswordModal(true)}
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 transition-all"
+              >
+                <Key className="w-4 h-4" />
+                <span>Reset Admin Password & Login</span>
+              </button>
             </div>
           </div>
         </div>
@@ -307,6 +397,107 @@ export default function SchoolProfilePage() {
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>Save Changes</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Admin Password & Edit Login Modal */}
+      {showAdminPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="w-full max-w-md glass-panel p-6 rounded-2xl border border-amber-500/20 space-y-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <Key className="w-5 h-5 text-amber-400" />
+                <span>Change Admin Password & Credentials</span>
+              </h2>
+              <button
+                onClick={() => setShowAdminPasswordModal(false)}
+                className="text-slate-400 hover:text-slate-200 text-sm font-semibold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAdminPasswordReset} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Admin Username</label>
+                <input
+                  type="text"
+                  required
+                  value={adminUsername}
+                  onChange={(e) => setAdminUsername(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Admin Email Address</label>
+                <input
+                  type="email"
+                  required
+                  value={adminEmail}
+                  onChange={(e) => setAdminEmail(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  New Admin Password <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="Enter new admin password (min. 6 chars)"
+                  value={newAdminPassword}
+                  onChange={(e) => setNewAdminPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Confirm New Password <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="Re-enter new password"
+                  value={confirmAdminPassword}
+                  onChange={(e) => setConfirmAdminPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowAdminPasswordModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-amber-500/20"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Updating Credentials...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Key className="w-4 h-4" />
+                      <span>Save New Password</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
