@@ -7,6 +7,7 @@ import { User, Mail, Phone, BookOpen, Award, Calendar, ShieldCheck, Loader2, Ale
 interface TeacherProfile {
   id: string;
   employeeId: string;
+  ehrmsId?: string;
   firstName: string;
   lastName: string;
   qualification?: string;
@@ -77,7 +78,7 @@ export default function TeacherProfilePage() {
             {profile?.firstName} {profile?.lastName}
           </h1>
           <p className="text-xs text-slate-400 font-mono">
-            Employee ID: <span className="text-cyan-300 font-semibold">{profile?.employeeId}</span> &bull; Status: <span className="text-emerald-400 font-semibold">{profile?.status}</span>
+            Employee ID: <span className="text-cyan-300 font-semibold">{profile?.employeeId}</span> {profile?.ehrmsId && <>&bull; EHRMS ID: <span className="text-emerald-300 font-semibold">{profile.ehrmsId}</span></>} &bull; Status: <span className="text-emerald-400 font-semibold">{profile?.status}</span>
           </p>
         </div>
       </div>

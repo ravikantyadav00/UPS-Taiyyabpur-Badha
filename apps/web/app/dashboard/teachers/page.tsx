@@ -15,12 +15,14 @@ interface TeacherAssignment {
 interface Teacher {
   id: string;
   employeeId: string;
+  ehrmsId?: string;
   firstName: string;
   lastName: string;
   email: string;
   phone?: string;
   qualification?: string;
   designation?: string;
+  gender?: string;
   status: string;
   teacherAssignments: TeacherAssignment[];
 }
@@ -58,11 +60,14 @@ export default function TeachersPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [employeeId, setEmployeeId] = useState('');
+  const [ehrmsId, setEhrmsId] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [qualification, setQualification] = useState('');
   const [designation, setDesignation] = useState('');
+  const [gender, setGender] = useState('MALE');
+  const [status, setStatus] = useState('ACTIVE');
 
   // Assign Class Form inputs
   const [assignTeacherId, setAssignTeacherId] = useState('');
@@ -109,11 +114,14 @@ export default function TeachersPage() {
           email: email.trim(),
           password,
           employeeId: employeeId.trim(),
+          ehrmsId: ehrmsId.trim() || undefined,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           phone: phone.trim() || undefined,
           qualification: qualification.trim() || undefined,
           designation: designation.trim() || undefined,
+          gender,
+          status,
         }),
       });
       setShowCreateModal(false);
@@ -129,13 +137,16 @@ export default function TeachersPage() {
 
   const handleOpenEdit = (teacher: Teacher) => {
     setSelectedTeacher(teacher);
-    setFirstName(teacher.firstName);
-    setLastName(teacher.lastName);
+    setFirstName(teacher.firstName || '');
+    setLastName(teacher.lastName || '');
     setEmployeeId(teacher.employeeId || '');
+    setEhrmsId(teacher.ehrmsId || '');
     setEmail(teacher.email || '');
     setPhone(teacher.phone || '');
     setQualification(teacher.qualification || '');
     setDesignation(teacher.designation || '');
+    setGender(teacher.gender || 'MALE');
+    setStatus(teacher.status || 'ACTIVE');
     setShowEditModal(true);
   };
 
@@ -151,10 +162,13 @@ export default function TeachersPage() {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           employeeId: employeeId.trim(),
+          ehrmsId: ehrmsId.trim() || undefined,
           email: email.trim(),
           phone: phone.trim() || undefined,
           qualification: qualification.trim() || undefined,
           designation: designation.trim() || undefined,
+          gender,
+          status,
         }),
       });
       setShowEditModal(false);
@@ -276,11 +290,14 @@ export default function TeachersPage() {
     setEmail('');
     setPassword('');
     setEmployeeId('');
+    setEhrmsId('');
     setFirstName('');
     setLastName('');
     setPhone('');
     setQualification('');
     setDesignation('');
+    setGender('MALE');
+    setStatus('ACTIVE');
     setSelectedTeacher(null);
   };
 
@@ -348,10 +365,28 @@ export default function TeachersPage() {
               <div className="space-y-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-100">
-                      {teacher.firstName} {teacher.lastName}
-                    </h3>
-                    <span className="text-xs text-emerald-400 font-mono font-semibold">{teacher.employeeId}</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg font-bold text-slate-100">
+                        {teacher.firstName} {teacher.lastName}
+                      </h3>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        teacher.status === 'ACTIVE' 
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                          : teacher.status === 'ON_LEAVE'
+                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          : 'bg-red-500/10 text-red-400 border-red-500/20'
+                      }`}>
+                        {teacher.status || 'ACTIVE'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap text-xs font-mono">
+                      <span className="text-emerald-400 font-semibold">EMP: {teacher.employeeId}</span>
+                      {teacher.ehrmsId && (
+                        <span className="text-cyan-400 font-semibold border-l border-slate-700 pl-2">
+                          EHRMS: {teacher.ehrmsId}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -365,7 +400,7 @@ export default function TeachersPage() {
                     <button
                       onClick={() => handleOpenEdit(teacher)}
                       className="p-1.5 text-slate-400 hover:text-cyan-400 rounded-lg hover:bg-slate-800 transition-all"
-                      title="Edit Teacher"
+                      title="Edit Teacher Profile"
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>
@@ -450,7 +485,7 @@ export default function TeachersPage() {
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">First Name</label>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">First Name *</label>
                   <input
                     type="text"
                     placeholder="Rahul"
@@ -461,7 +496,7 @@ export default function TeachersPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Last Name</label>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Last Name *</label>
                   <input
                     type="text"
                     placeholder="Sharma"
@@ -475,12 +510,36 @@ export default function TeachersPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Employee ID</label>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Employee ID *</label>
                   <input
                     type="text"
                     placeholder="EMP-101"
                     value={employeeId}
                     onChange={(e) => setEmployeeId(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">EHRMS ID (Human Resource)</label>
+                  <input
+                    type="text"
+                    placeholder="EHRMS-48201"
+                    value={ehrmsId}
+                    onChange={(e) => setEhrmsId(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Email Address *</label>
+                  <input
+                    type="email"
+                    placeholder="teacher@school.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
                     required
                   />
@@ -497,28 +556,30 @@ export default function TeachersPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Email Address</label>
-                <input
-                  type="email"
-                  placeholder="teacher@school.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Initial Password</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Initial Password *</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Gender</label>
+                  <select
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -536,12 +597,25 @@ export default function TeachersPage() {
                   <label className="text-xs font-semibold text-slate-300 block mb-1">Designation</label>
                   <input
                     type="text"
-                    placeholder="Senior Teacher"
+                    placeholder="Assistant Teacher / Head Teacher"
                     value={designation}
                     onChange={(e) => setDesignation(e.target.value)}
                     className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Account Status</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="ON_LEAVE">ON LEAVE</option>
+                  <option value="INACTIVE">INACTIVE</option>
+                </select>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
@@ -570,40 +644,78 @@ export default function TeachersPage() {
       {showEditModal && selectedTeacher && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-lg glass-panel p-6 rounded-2xl border border-slate-800 space-y-6 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-slate-100">Edit Teacher Profile</h2>
+            <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+              <Edit3 className="w-5 h-5 text-cyan-400" />
+              <span>Edit Teacher Profile</span>
+            </h2>
 
             <form onSubmit={handleUpdate} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">First Name</label>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">First Name *</label>
                   <input
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-cyan-500"
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Last Name</label>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Last Name *</label>
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-cyan-500"
                     required
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Phone Number</label>
-                <input
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Employee ID *</label>
+                  <input
+                    type="text"
+                    value={employeeId}
+                    onChange={(e) => setEmployeeId(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-cyan-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">EHRMS ID (Human Resource)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. EHRMS-48201"
+                    value={ehrmsId}
+                    onChange={(e) => setEhrmsId(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Email Address *</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-cyan-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Phone Number</label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -613,7 +725,7 @@ export default function TeachersPage() {
                     type="text"
                     value={qualification}
                     onChange={(e) => setQualification(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-cyan-500"
                   />
                 </div>
                 <div>
@@ -622,8 +734,35 @@ export default function TeachersPage() {
                     type="text"
                     value={designation}
                     onChange={(e) => setDesignation(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-cyan-500"
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Gender</label>
+                  <select
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Account Status</label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="ON_LEAVE">ON LEAVE</option>
+                    <option value="INACTIVE">INACTIVE</option>
+                  </select>
                 </div>
               </div>
 
@@ -638,10 +777,10 @@ export default function TeachersPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 gradient-button text-white text-xs font-semibold rounded-xl flex items-center gap-2"
+                  className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-lg"
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>Update Profile</span>
+                  <span>Save Profile Changes</span>
                 </button>
               </div>
             </form>

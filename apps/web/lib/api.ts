@@ -231,6 +231,7 @@ function getInitialMockData(): MockDB {
     {
       id: 't-101',
       employeeId: 'EMP-001',
+      ehrmsId: 'EHRMS-48201',
       firstName: 'Rakesh',
       lastName: 'Sharma',
       gender: 'MALE',
@@ -240,6 +241,7 @@ function getInitialMockData(): MockDB {
       mobileNo: '9876501234',
       phone: '9876501234',
       status: 'ACTIVE',
+      email: 'rakesh.sharma@upstaiyyabpurbadha.edu.in',
       user: { email: 'rakesh.sharma@upstaiyyabpurbadha.edu.in' },
       teacherAssignments: [
         { id: 'ta-1', subjectName: 'Mathematics', class: { name: 'Class 6th' }, section: { name: 'A' } },
@@ -249,6 +251,7 @@ function getInitialMockData(): MockDB {
     {
       id: 't-102',
       employeeId: 'EMP-002',
+      ehrmsId: 'EHRMS-48202',
       firstName: 'Sunita',
       lastName: 'Verma',
       gender: 'FEMALE',
@@ -258,6 +261,7 @@ function getInitialMockData(): MockDB {
       mobileNo: '9876505678',
       phone: '9876505678',
       status: 'ACTIVE',
+      email: 'sunita.verma@upstaiyyabpurbadha.edu.in',
       user: { email: 'sunita.verma@upstaiyyabpurbadha.edu.in' },
       teacherAssignments: [
         { id: 'ta-3', subjectName: 'Hindi', class: { name: 'Class 8th' }, section: { name: 'A' } },
@@ -1013,9 +1017,11 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
 
     if (method === 'POST') {
+      const emailVal = bodyData.email || `teacher-${Date.now()}@school.com`;
       const newTeacher = {
         id: 't-' + Date.now(),
         employeeId: bodyData.employeeId || `EMP-${Date.now()}`,
+        ehrmsId: bodyData.ehrmsId || '',
         firstName: bodyData.firstName || 'Teacher',
         lastName: bodyData.lastName || '',
         gender: bodyData.gender || 'MALE',
@@ -1024,8 +1030,9 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
         qualification: bodyData.qualification || 'B.Ed.',
         mobileNo: bodyData.mobileNo || bodyData.phone || '',
         phone: bodyData.phone || bodyData.mobileNo || '',
-        status: 'ACTIVE',
-        user: { email: bodyData.email || `teacher-${Date.now()}@school.com` },
+        email: emailVal,
+        status: bodyData.status || 'ACTIVE',
+        user: { email: emailVal },
         teacherAssignments: [],
       };
       db.teachers.unshift(newTeacher);
@@ -1034,7 +1041,18 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
     }
 
     if ((method === 'PATCH' || method === 'PUT') && teacherId) {
-      db.teachers = db.teachers.map((t) => (t.id === teacherId ? { ...t, ...bodyData } : t));
+      db.teachers = db.teachers.map((t) => {
+        if (t.id === teacherId) {
+          const updatedEmail = bodyData.email !== undefined ? bodyData.email : (t.email || t.user?.email || '');
+          return {
+            ...t,
+            ...bodyData,
+            email: updatedEmail,
+            user: { ...(t.user || {}), email: updatedEmail },
+          };
+        }
+        return t;
+      });
       saveMockDB(db);
       return db.teachers.find((t) => t.id === teacherId) || { success: true };
     }
