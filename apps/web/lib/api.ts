@@ -15,6 +15,7 @@ interface MockDB {
   holidays: any[];
   academicYears: any[];
   exams: any[];
+  gallery: any[];
   marks: Record<string, any>;
   attendance: any[];
 }
@@ -367,6 +368,23 @@ function getInitialMockData(): MockDB {
     },
   ];
 
+  const defaultGallery = [
+    {
+      id: 'g-1',
+      title: 'विद्यालय भवन एवं प्रांगण (School Building & Campus)',
+      imageUrl: '/images/school-building.jpg',
+      category: 'CAMPUS',
+      createdAt: '2026-09-01T00:00:00Z',
+    },
+    {
+      id: 'g-2',
+      title: 'विद्यार्थी मध्याह्न भोजन (Mid-Day Meal) ग्रहण करते हुए',
+      imageUrl: '/images/school-midday-meal.jpg',
+      category: 'EVENTS',
+      createdAt: '2026-09-02T00:00:00Z',
+    },
+  ];
+
   return {
     school: {
       id: 'school-1',
@@ -389,6 +407,7 @@ function getInitialMockData(): MockDB {
     holidays: defaultHolidays,
     academicYears: defaultAcademicYears,
     exams: defaultExams,
+    gallery: defaultGallery,
     marks: {},
     attendance: [],
   };
@@ -399,7 +418,26 @@ function getMockDB(): MockDB {
   try {
     const raw = localStorage.getItem(MOCK_STORAGE_KEY);
     if (raw) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed.gallery)) {
+        parsed.gallery = [
+          {
+            id: 'g-1',
+            title: 'विद्यालय भवन एवं प्रांगण (School Building & Campus)',
+            imageUrl: '/images/school-building.jpg',
+            category: 'CAMPUS',
+            createdAt: '2026-09-01T00:00:00Z',
+          },
+          {
+            id: 'g-2',
+            title: 'विद्यार्थी मध्याह्न भोजन (Mid-Day Meal) ग्रहण करते हुए',
+            imageUrl: '/images/school-midday-meal.jpg',
+            category: 'EVENTS',
+            createdAt: '2026-09-02T00:00:00Z',
+          },
+        ];
+      }
+      return parsed;
     }
   } catch (e) {}
   const initial = getInitialMockData();
@@ -750,6 +788,44 @@ function handleMockRequest(endpoint: string, options: ApiFetchOptions = {}): any
 
     if (method === 'DELETE' && holidayId) {
       db.holidays = db.holidays.filter((h) => h.id !== holidayId);
+      saveMockDB(db);
+      return { success: true };
+    }
+  }
+
+  // ==========================================
+  // GALLERY CRUD (GET / POST / PATCH / DELETE)
+  // ==========================================
+  if (path === '/gallery' || path.startsWith('/gallery/')) {
+    const parts = path.split('/').filter(Boolean);
+    const photoId = parts.length > 1 ? parts[1] : null;
+
+    if (method === 'GET') {
+      return Array.isArray(db.gallery) ? db.gallery : [];
+    }
+
+    if (method === 'POST') {
+      const newPhoto = {
+        id: 'g-' + Date.now(),
+        title: bodyData.title || 'School Photo',
+        imageUrl: bodyData.imageUrl || '/images/school-building.jpg',
+        category: bodyData.category || 'GENERAL',
+        createdAt: new Date().toISOString(),
+      };
+      db.gallery = Array.isArray(db.gallery) ? db.gallery : [];
+      db.gallery.unshift(newPhoto);
+      saveMockDB(db);
+      return newPhoto;
+    }
+
+    if ((method === 'PATCH' || method === 'PUT') && photoId) {
+      db.gallery = (db.gallery || []).map((g) => (g.id === photoId ? { ...g, ...bodyData } : g));
+      saveMockDB(db);
+      return (db.gallery || []).find((g) => g.id === photoId) || { success: true };
+    }
+
+    if (method === 'DELETE' && photoId) {
+      db.gallery = (db.gallery || []).filter((g) => g.id !== photoId);
       saveMockDB(db);
       return { success: true };
     }

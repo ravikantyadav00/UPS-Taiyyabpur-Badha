@@ -60,12 +60,20 @@ interface SchoolInfo {
   udiseCode?: string;
 }
 
+interface GalleryItem {
+  id: string;
+  title: string;
+  imageUrl: string;
+  category?: string;
+}
+
 export default function PremiumSchoolHomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [holidaysLoading, setHolidaysLoading] = useState(true);
   const [notices, setNotices] = useState<Notice[]>([]);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [schoolInfo, setSchoolInfo] = useState<SchoolInfo>({
     name: 'UPS Taiyyabpur Badha',
     address: 'Vill. Taiyyabpur Badha, Nagal, Saharanpur, Uttar Pradesh',
@@ -85,20 +93,24 @@ export default function PremiumSchoolHomePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [nData, hData, sData] = await Promise.all([
+        const [nData, hData, sData, gData] = await Promise.all([
           apiFetch<Notice[]>('/notices'),
           apiFetch<Holiday[]>('/holidays'),
-          apiFetch<SchoolInfo>('/schools/me')
+          apiFetch<SchoolInfo>('/schools/me'),
+          apiFetch<GalleryItem[]>('/gallery')
         ]);
         if (Array.isArray(nData)) setNotices(nData);
         if (Array.isArray(hData)) {
           setHolidays(hData);
         }
+        if (Array.isArray(gData)) {
+          setGallery(gData);
+        }
         if (sData && typeof sData === 'object') {
           setSchoolInfo(prev => ({ ...prev, ...sData }));
         }
       } catch (err) {
-        console.error('Failed to load notices/holidays/school profile', err);
+        console.error('Failed to load notices/holidays/school profile/gallery', err);
       } finally {
         setHolidaysLoading(false);
       }
@@ -725,35 +737,33 @@ export default function PremiumSchoolHomePage() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white p-4 rounded-3xl border border-[#E2DFD7] shadow-sm space-y-3">
-                <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-[#E2DFD7] group">
-                  <img
-                    src="/images/school-building.jpg"
-                    alt="UPS Taiyyabpur Badha Campus Building"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/80 via-transparent to-transparent"></div>
-                  <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-white/95 backdrop-blur-md text-xs font-bold text-[#0B1F3A] border border-[#E2DFD7]">
-                    विद्यालय भवन एवं प्रांगण • UPS Taiyyabpur Badha
+            {gallery.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {gallery.map((item) => (
+                  <div key={item.id} className="bg-white p-4 rounded-3xl border border-[#E2DFD7] shadow-sm space-y-3 flex flex-col justify-between">
+                    <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-[#E2DFD7] group bg-slate-100">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/images/school-building.jpg';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/85 via-transparent to-transparent"></div>
+                      <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-white/95 backdrop-blur-md text-xs font-bold text-[#0B1F3A] border border-[#E2DFD7]">
+                        {item.title}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-
-              <div className="bg-white p-4 rounded-3xl border border-[#E2DFD7] shadow-sm space-y-3">
-                <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-[#E2DFD7] group">
-                  <img
-                    src="/images/school-midday-meal.jpg"
-                    alt="Students having Mid-Day Meal"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/80 via-transparent to-transparent"></div>
-                  <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-white/95 backdrop-blur-md text-xs font-bold text-[#0B1F3A] border border-[#E2DFD7]">
-                    विद्यार्थी मध्याह्न भोजन (Mid-Day Meal) ग्रहण करते हुए
-                  </div>
-                </div>
+            ) : (
+              <div className="bg-white p-8 rounded-2xl border border-[#E2DFD7] text-center space-y-2 max-w-md mx-auto shadow-sm">
+                <p className="text-sm font-semibold text-[#0B1F3A]">गैलरी में फ़ोटो शीघ्र ही अपलोड की जाएँगी।</p>
+                <p className="text-xs text-[#64748B]">UPS Taiyyabpur Badha</p>
               </div>
-            </div>
+            )}
           </div>
         </section>
 
