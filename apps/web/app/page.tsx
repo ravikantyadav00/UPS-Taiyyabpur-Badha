@@ -782,7 +782,7 @@ export default function PremiumSchoolHomePage() {
                   <div className="text-xs font-bold uppercase tracking-wider text-[#D4A84F] flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 shrink-0" /> Address
                   </div>
-                  <div className="font-bold text-[#172033] text-xs leading-relaxed">
+                  <div className="font-extrabold text-[#0B1F3A] text-base leading-snug">
                     {schoolInfo.address || 'Vill. Taiyyabpur Badha, Nagal, Saharanpur, Uttar Pradesh'}
                   </div>
                 </div>
