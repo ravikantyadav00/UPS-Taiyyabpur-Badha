@@ -25,7 +25,8 @@ import {
   X,
   Droplets,
   Library,
-  GraduationCap
+  GraduationCap,
+  Loader2
 } from 'lucide-react';
 
 import { apiFetch } from '@/lib/api';
@@ -178,38 +179,38 @@ export default function PremiumSchoolHomePage() {
   ];
 
   return (
-    <div id="top" className="min-h-screen bg-[#F8F6F0] text-[#172033] font-sans selection:bg-[#D4A84F] selection:text-[#0B1F3A]">
-      {/* Top School Bar */}
+    <div id="top" className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#F8F6F0] text-[#172033] font-sans selection:bg-[#D4A84F] selection:text-[#0B1F3A]">
+      {/* Top Bar */}
       <div className="bg-[#0B1F3A] text-white text-xs py-2.5 px-4 font-medium border-b border-[#D4A84F]/30">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
             <span className="flex items-center gap-1.5 text-slate-200">
-              <MapPin className="w-3.5 h-3.5 text-[#D4A84F]" />
-              Vill. Taiyyabpur Badha, Nagal, Saharanpur, Uttar Pradesh
+              <MapPin className="w-3.5 h-3.5 text-[#D4A84F] flex-shrink-0" />
+              <span>Vill. Taiyyabpur Badha, Nagal, Saharanpur, UP</span>
             </span>
-            <span className="hidden md:inline text-slate-500">|</span>
-            <span className="hidden md:inline font-mono text-slate-300">
+            <span className="hidden sm:inline text-slate-500">|</span>
+            <span className="hidden sm:inline font-mono text-slate-300">
               UDISE Code: <strong className="text-[#D4A84F]">09011101603</strong>
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 text-xs ml-auto sm:ml-0">
             <a href="tel:9058347719" className="hover:text-[#D4A84F] transition-colors flex items-center gap-1.5 font-semibold text-slate-200">
-              <Phone className="w-3.5 h-3.5 text-[#D4A84F]" />
+              <Phone className="w-3.5 h-3.5 text-[#D4A84F] flex-shrink-0" />
               <span>9058347719</span>
             </a>
             <span className="text-slate-500">|</span>
             <Link
               href="/login"
-              className="text-xs font-semibold text-[#D4A84F] hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-[#D4A84F] hover:underline flex items-center gap-1"
             >
-              <LogIn className="w-3 h-3 text-[#D4A84F]" />
+              <LogIn className="w-3.5 h-3.5 text-[#D4A84F]" />
               <span>Staff Login</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Sticky Premium Navbar */}
+      {/* Sticky Navbar */}
       <header className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled
           ? 'bg-white/95 backdrop-blur-md border-b border-[#E2DFD7] shadow-md py-3'
@@ -218,22 +219,22 @@ export default function PremiumSchoolHomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
           {/* Logo & School Title */}
-          <Link href="/" className="flex items-center gap-3.5 group">
-            <div className="w-11 h-11 rounded-xl bg-[#0B1F3A] flex items-center justify-center text-[#D4A84F] shadow-sm border border-[#D4A84F]/40 group-hover:scale-105 transition-transform duration-300">
-              <School className="w-6 h-6" />
+          <Link href="/" className="flex items-center gap-3 group shrink-0">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#0B1F3A] flex items-center justify-center text-[#D4A84F] shadow-sm border border-[#D4A84F]/40 group-hover:scale-105 transition-transform duration-300 shrink-0">
+              <School className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h1 className="text-lg sm:text-xl font-extrabold tracking-tight text-[#0B1F3A] group-hover:text-[#D4A84F] transition-colors">
+              <div className="text-base sm:text-lg font-extrabold tracking-tight text-[#0B1F3A] group-hover:text-[#D4A84F] transition-colors leading-snug">
                 UPS Taiyyabpur Badha
-              </h1>
-              <p className="text-xs text-[#64748B] font-medium">
+              </div>
+              <p className="text-[11px] sm:text-xs text-[#64748B] font-medium leading-none mt-0.5">
                 यू.पी.एस. तैय्यबपुर बढ़ा • Nagal, Saharanpur
               </p>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-7 text-sm font-semibold text-[#172033]">
+          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8 text-sm font-semibold text-[#172033]">
             <a href="#top" className="hover:text-[#0B1F3A] transition-colors">Home</a>
             <a href="#about" className="hover:text-[#0B1F3A] transition-colors">About</a>
             <a href="#classes" className="hover:text-[#0B1F3A] transition-colors">Academics</a>
@@ -243,7 +244,7 @@ export default function PremiumSchoolHomePage() {
           </nav>
 
           {/* Right Action: Staff Login */}
-          <div className="hidden sm:flex items-center space-x-3">
+          <div className="hidden lg:flex items-center space-x-3">
             <Link
               href="/login"
               className="px-4 py-2 text-xs font-semibold text-[#0B1F3A] bg-white border border-[#0B1F3A]/20 hover:border-[#0B1F3A] hover:bg-[#0B1F3A] hover:text-white rounded-xl transition-all flex items-center gap-2 shadow-sm"
@@ -256,7 +257,7 @@ export default function PremiumSchoolHomePage() {
           {/* Mobile Menu Trigger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg bg-white border border-[#E2DFD7] text-[#172033]"
+            className="lg:hidden p-2 rounded-xl bg-white border border-[#E2DFD7] text-[#172033] hover:bg-slate-100 transition-colors"
             aria-label="Toggle Menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -265,7 +266,7 @@ export default function PremiumSchoolHomePage() {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-b border-[#E2DFD7] px-4 pt-3 pb-5 space-y-2 mt-3 shadow-lg">
+          <div className="lg:hidden bg-white border-b border-[#E2DFD7] px-4 pt-3 pb-5 space-y-2 mt-3 shadow-lg">
             <a
               href="#top"
               onClick={() => setMobileMenuOpen(false)}
@@ -312,7 +313,7 @@ export default function PremiumSchoolHomePage() {
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full px-4 py-2 text-xs font-semibold text-center text-[#0B1F3A] bg-[#F8F6F0] border border-[#0B1F3A]/20 rounded-xl flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-xs font-semibold text-center text-[#0B1F3A] bg-[#F8F6F0] border border-[#0B1F3A]/20 rounded-xl flex items-center justify-center gap-2"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Staff Login</span>
@@ -322,39 +323,39 @@ export default function PremiumSchoolHomePage() {
         )}
       </header>
 
-      <main className="relative">
+      <main className="relative w-full max-w-full overflow-x-hidden">
 
         {/* HERO SECTION */}
-        <section className="relative py-16 lg:py-24 border-b border-[#E2DFD7]/80 overflow-hidden bg-gradient-to-b from-[#F8F6F0] to-[#FAF8F5]">
+        <section className="relative py-12 sm:py-16 lg:py-24 border-b border-[#E2DFD7]/80 overflow-hidden bg-gradient-to-b from-[#F8F6F0] to-[#FAF8F5]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               
               {/* Left Hero Content */}
-              <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
+              <div className="lg:col-span-6 space-y-5 sm:space-y-6 text-center lg:text-left">
                 
                 {/* Eyebrow */}
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[#0B1F3A]/5 border border-[#0B1F3A]/15 text-[#0B1F3A]">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#D4A84F]" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#D4A84F] flex-shrink-0" />
                   <span>OFFICIAL SCHOOL WEBSITE</span>
                 </div>
 
-                {/* Large Heading */}
+                {/* Primary Page Heading (Single H1) */}
                 <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#0B1F3A] leading-tight">
                   UPS Taiyyabpur Badha
                 </h1>
 
                 {/* Secondary Hindi Motto */}
-                <p className="text-xl sm:text-2xl font-bold text-[#D4A84F]">
+                <p className="text-xl sm:text-2xl font-bold text-[#D4A84F] tracking-wide">
                   ज्ञान • संस्कार • विकास
                 </p>
 
                 {/* Subtext */}
-                <p className="text-base sm:text-lg text-[#64748B] leading-relaxed max-w-xl mx-auto lg:mx-0 font-normal">
+                <p className="text-sm sm:text-base lg:text-lg text-[#64748B] leading-relaxed max-w-xl mx-auto lg:mx-0 font-normal">
                   "कक्षा 1 से 8 तक गुणवत्तापूर्ण शिक्षा और बच्चों के सर्वांगीण विकास के लिए समर्पित विद्यालय।"
                 </p>
 
                 {/* Buttons */}
-                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
                   <a
                     href="#about"
                     className="w-full sm:w-auto px-7 py-3.5 text-sm font-bold text-white bg-[#0B1F3A] hover:bg-[#16325c] rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
@@ -375,19 +376,19 @@ export default function PremiumSchoolHomePage() {
               {/* Right Hero Image Card */}
               <div className="lg:col-span-6 relative">
                 <div className="bg-white p-3 sm:p-4 rounded-3xl border border-[#E2DFD7] shadow-xl relative space-y-3">
-                  <div className="relative rounded-2xl overflow-hidden border border-[#E2DFD7]">
+                  <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-[#E2DFD7]">
                     <img
                       src="/images/school-building.jpg"
                       alt="UPS Taiyyabpur Badha Composite School Campus, Saharanpur"
-                      className="w-full h-72 sm:h-96 object-cover hover:scale-105 transition-transform duration-700"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/90 via-[#0B1F3A]/20 to-transparent"></div>
-                    <div className="absolute bottom-4 left-4 right-4 p-3.5 rounded-xl bg-white/95 backdrop-blur-md border border-[#E2DFD7] shadow-md flex items-center justify-between text-xs">
+                    <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 p-3 sm:p-3.5 rounded-xl bg-white/95 backdrop-blur-md border border-[#E2DFD7] shadow-md flex items-center justify-between text-xs">
                       <div>
                         <div className="font-bold text-[#0B1F3A]">UPS Taiyyabpur Badha Composite</div>
                         <div className="text-[11px] text-[#64748B]">Nagal, Saharanpur, Uttar Pradesh</div>
                       </div>
-                      <span className="px-2.5 py-1 rounded-md text-[11px] font-mono font-bold bg-[#0B1F3A] text-[#D4A84F]">
+                      <span className="px-2.5 py-1 rounded-md text-[11px] font-mono font-bold bg-[#0B1F3A] text-[#D4A84F] shrink-0">
                         UDISE: 09011101603
                       </span>
                     </div>
@@ -399,14 +400,14 @@ export default function PremiumSchoolHomePage() {
           </div>
         </section>
 
-        {/* MINIMAL STATS STRIP SECTION */}
+        {/* STATS SECTION */}
         <section className="py-10 bg-white border-b border-[#E2DFD7]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-[#E2DFD7]">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {stats.map((st, idx) => (
-                <div key={idx} className="p-4 sm:p-6 text-center">
+                <div key={idx} className="h-full p-5 sm:p-6 text-center bg-[#FAF8F5] border border-[#E2DFD7] rounded-2xl shadow-sm flex flex-col justify-center items-center">
                   <div className="text-3xl sm:text-4xl font-black text-[#0B1F3A]">{st.value}</div>
-                  <div className="text-xs font-semibold text-[#64748B] uppercase tracking-wider mt-1">{st.label}</div>
+                  <div className="text-xs font-bold text-[#64748B] uppercase tracking-wider mt-1.5">{st.label}</div>
                 </div>
               ))}
             </div>
@@ -414,15 +415,15 @@ export default function PremiumSchoolHomePage() {
         </section>
 
         {/* ABOUT SECTION */}
-        <section id="about" className="py-20 lg:py-28 border-b border-[#E2DFD7] bg-[#F8F6F0]">
+        <section id="about" className="py-16 sm:py-20 lg:py-24 border-b border-[#E2DFD7] bg-[#F8F6F0]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               
               <div className="lg:col-span-6 space-y-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-widest bg-[#0B1F3A]/5 text-[#0B1F3A] border border-[#0B1F3A]/10">
                   हमारे विद्यालय के बारे में
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1F3A] leading-snug">
+                <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0B1F3A] leading-snug">
                   UPS Taiyyabpur Badha
                 </h2>
                 <p className="text-[#172033] text-sm sm:text-base leading-relaxed">
@@ -434,22 +435,22 @@ export default function PremiumSchoolHomePage() {
 
                 {/* Verified Facilities List */}
                 <div className="pt-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#0B1F3A] mb-3">उपलब्ध सुविधाएं (Facilities):</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-[#172033]">
-                    <div className="p-3 rounded-xl bg-white border border-[#E2DFD7] flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-[#D4A84F]" /> Smart Class
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#0B1F3A] mb-3">उपलब्ध सुविधाएं (Facilities):</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-semibold text-[#172033]">
+                    <div className="p-3 rounded-xl bg-white border border-[#E2DFD7] flex items-center gap-2 shadow-sm">
+                      <CheckCircle2 className="w-4 h-4 text-[#D4A84F] shrink-0" /> Smart Class
                     </div>
-                    <div className="p-3 rounded-xl bg-white border border-[#E2DFD7] flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-[#D4A84F]" /> Computer Lab
+                    <div className="p-3 rounded-xl bg-white border border-[#E2DFD7] flex items-center gap-2 shadow-sm">
+                      <CheckCircle2 className="w-4 h-4 text-[#D4A84F] shrink-0" /> Computer Lab
                     </div>
-                    <div className="p-3 rounded-xl bg-white border border-[#E2DFD7] flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-[#D4A84F]" /> Library
+                    <div className="p-3 rounded-xl bg-white border border-[#E2DFD7] flex items-center gap-2 shadow-sm">
+                      <CheckCircle2 className="w-4 h-4 text-[#D4A84F] shrink-0" /> Library
                     </div>
-                    <div className="p-3 rounded-xl bg-white border border-[#E2DFD7] flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-[#D4A84F]" /> Playground
+                    <div className="p-3 rounded-xl bg-white border border-[#E2DFD7] flex items-center gap-2 shadow-sm">
+                      <CheckCircle2 className="w-4 h-4 text-[#D4A84F] shrink-0" /> Playground
                     </div>
-                    <div className="p-3 rounded-xl bg-white border border-[#E2DFD7] flex items-center gap-2 sm:col-span-2">
-                      <CheckCircle2 className="w-4 h-4 text-[#D4A84F]" /> Drinking Water
+                    <div className="p-3 rounded-xl bg-white border border-[#E2DFD7] flex items-center gap-2 sm:col-span-2 shadow-sm">
+                      <CheckCircle2 className="w-4 h-4 text-[#D4A84F] shrink-0" /> Drinking Water
                     </div>
                   </div>
                 </div>
@@ -458,11 +459,11 @@ export default function PremiumSchoolHomePage() {
               {/* Photo Card Showcase */}
               <div className="lg:col-span-6">
                 <div className="bg-white p-4 rounded-3xl border border-[#E2DFD7] shadow-lg space-y-4">
-                  <div className="relative rounded-2xl overflow-hidden border border-[#E2DFD7]">
+                  <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-[#E2DFD7]">
                     <img
                       src="/images/school-midday-meal.jpg"
                       alt="Students having Mid-Day Meal at UPS Taiyyabpur Badha"
-                      className="w-full h-64 sm:h-72 object-cover hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/80 via-transparent to-transparent"></div>
                     <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-white/95 backdrop-blur-md border border-[#E2DFD7] text-xs font-bold text-[#0B1F3A] flex justify-between items-center">
@@ -474,7 +475,7 @@ export default function PremiumSchoolHomePage() {
                   <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E2DFD7] space-y-2 text-xs">
                     <div className="flex justify-between border-b border-[#E2DFD7] pb-2">
                       <span className="text-[#64748B]">School Name</span>
-                      <span className="font-bold text-[#0B1F3A]">UPS Taiyyabpur Badha</span>
+                      <span className="font-bold text-[#0B1F3A] text-right">UPS Taiyyabpur Badha</span>
                     </div>
                     <div className="flex justify-between border-b border-[#E2DFD7] pb-2">
                       <span className="text-[#64748B]">UDISE Code</span>
@@ -482,7 +483,7 @@ export default function PremiumSchoolHomePage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#64748B]">Location</span>
-                      <span className="font-bold text-[#0B1F3A]">Vill. Taiyyabpur Badha, Nagal, Saharanpur</span>
+                      <span className="font-bold text-[#0B1F3A] text-right">Vill. Taiyyabpur Badha, Nagal, Saharanpur</span>
                     </div>
                   </div>
                 </div>
@@ -493,16 +494,16 @@ export default function PremiumSchoolHomePage() {
         </section>
 
         {/* PRINCIPAL SECTION */}
-        <section id="principal" className="py-20 bg-white border-b border-[#E2DFD7]">
+        <section id="principal" className="py-16 sm:py-20 bg-white border-b border-[#E2DFD7]">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="bg-[#FAF8F5] p-8 sm:p-12 rounded-3xl border border-[#E2DFD7] space-y-6 shadow-sm">
-              <div className="w-20 h-20 mx-auto rounded-full bg-[#0B1F3A] border-2 border-[#D4A84F] flex items-center justify-center text-[#D4A84F]">
+            <div className="bg-[#FAF8F5] p-6 sm:p-12 rounded-3xl border border-[#E2DFD7] space-y-6 shadow-sm">
+              <div className="w-20 h-20 mx-auto rounded-full bg-[#0B1F3A] border-2 border-[#D4A84F] flex items-center justify-center text-[#D4A84F] shadow-md">
                 <User className="w-10 h-10" />
               </div>
 
               <div className="space-y-1">
                 <span className="text-xs font-bold uppercase tracking-widest text-[#D4A84F]">प्रधानाध्यापक की ओर से</span>
-                <h3 className="text-2xl font-extrabold text-[#0B1F3A]">{schoolInfo.principalName || 'Sanjay Kumar'}</h3>
+                <h2 className="text-2xl font-extrabold text-[#0B1F3A]">{schoolInfo.principalName || 'Sanjay Kumar'}</h2>
                 <p className="text-xs text-[#64748B] font-semibold">प्रधानाध्यापक / Head • {schoolInfo.name || 'UPS Taiyyabpur Badha'}</p>
               </div>
 
@@ -514,78 +515,82 @@ export default function PremiumSchoolHomePage() {
         </section>
 
         {/* ACADEMICS SECTION */}
-        <section id="classes" className="py-24 border-b border-[#E2DFD7] bg-[#F8F6F0]">
+        <section id="classes" className="py-16 sm:py-20 lg:py-24 border-b border-[#E2DFD7] bg-[#F8F6F0]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-16 space-y-2">
+            <div className="text-center max-w-2xl mx-auto mb-12 lg:mb-16 space-y-2">
               <span className="text-xs font-bold uppercase tracking-widest text-[#D4A84F]">कक्षा 1 से 8 तक शिक्षा</span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1F3A]">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0B1F3A]">
                 Academic Structure
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               
               {/* Primary Wing */}
-              <div className="bg-white p-8 rounded-3xl border border-[#E2DFD7] space-y-6 shadow-sm">
-                <div className="flex items-center justify-between border-b border-[#E2DFD7] pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-[#0B1F3A]/5 text-[#0B1F3A]">
-                      <GraduationCap className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-[#0B1F3A]">PRIMARY WING</h3>
-                      <p className="text-xs text-[#64748B]">Classes 1–5</p>
-                    </div>
-                  </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#D4A84F]/15 text-[#0B1F3A]">
-                    कक्षा 1 से 5
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  {primaryClasses.map((item, i) => (
-                    <div key={i} className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E2DFD7] flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono font-bold text-[#0B1F3A] bg-white px-2.5 py-1 rounded-md border border-[#E2DFD7]">
-                          {item.grade}
-                        </span>
-                        <span className="font-bold text-[#172033]">{item.title}</span>
+              <div className="h-full bg-white p-6 sm:p-8 rounded-3xl border border-[#E2DFD7] space-y-6 shadow-sm flex flex-col justify-between">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between border-b border-[#E2DFD7] pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-xl bg-[#0B1F3A]/5 text-[#0B1F3A]">
+                        <GraduationCap className="w-6 h-6" />
                       </div>
-                      <span className="text-[#64748B] text-[11px]">{item.desc}</span>
+                      <div>
+                        <h3 className="text-lg font-bold text-[#0B1F3A]">PRIMARY WING</h3>
+                        <p className="text-xs text-[#64748B]">Classes 1–5</p>
+                      </div>
                     </div>
-                  ))}
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#D4A84F]/15 text-[#0B1F3A]">
+                      कक्षा 1 से 5
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {primaryClasses.map((item, i) => (
+                      <div key={i} className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E2DFD7] flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs gap-2 sm:gap-4">
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono font-bold text-[#0B1F3A] bg-white px-2.5 py-1 rounded-md border border-[#E2DFD7] shrink-0">
+                            {item.grade}
+                          </span>
+                          <span className="font-bold text-[#172033]">{item.title}</span>
+                        </div>
+                        <span className="text-[#64748B] text-[11px] sm:text-xs">{item.desc}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               {/* Upper Primary Wing */}
-              <div className="bg-white p-8 rounded-3xl border border-[#E2DFD7] space-y-6 shadow-sm">
-                <div className="flex items-center justify-between border-b border-[#E2DFD7] pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-[#0B1F3A]/5 text-[#0B1F3A]">
-                      <BookOpen className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-[#0B1F3A]">UPPER PRIMARY WING</h3>
-                      <p className="text-xs text-[#64748B]">Classes 6–8</p>
-                    </div>
-                  </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#0B1F3A]/10 text-[#0B1F3A]">
-                    कक्षा 6 से 8
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  {upperPrimaryClasses.map((item, i) => (
-                    <div key={i} className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E2DFD7] flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono font-bold text-[#0B1F3A] bg-white px-2.5 py-1 rounded-md border border-[#E2DFD7]">
-                          {item.grade}
-                        </span>
-                        <span className="font-bold text-[#172033]">{item.title}</span>
+              <div className="h-full bg-white p-6 sm:p-8 rounded-3xl border border-[#E2DFD7] space-y-6 shadow-sm flex flex-col justify-between">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between border-b border-[#E2DFD7] pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-xl bg-[#0B1F3A]/5 text-[#0B1F3A]">
+                        <BookOpen className="w-6 h-6" />
                       </div>
-                      <span className="text-[#64748B] text-[11px]">{item.desc}</span>
+                      <div>
+                        <h3 className="text-lg font-bold text-[#0B1F3A]">UPPER PRIMARY WING</h3>
+                        <p className="text-xs text-[#64748B]">Classes 6–8</p>
+                      </div>
                     </div>
-                  ))}
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#0B1F3A]/10 text-[#0B1F3A]">
+                      कक्षा 6 से 8
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {upperPrimaryClasses.map((item, i) => (
+                      <div key={i} className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E2DFD7] flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs gap-2 sm:gap-4">
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono font-bold text-[#0B1F3A] bg-white px-2.5 py-1 rounded-md border border-[#E2DFD7] shrink-0">
+                            {item.grade}
+                          </span>
+                          <span className="font-bold text-[#172033]">{item.title}</span>
+                        </div>
+                        <span className="text-[#64748B] text-[11px] sm:text-xs">{item.desc}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -594,26 +599,26 @@ export default function PremiumSchoolHomePage() {
         </section>
 
         {/* FACILITIES SECTION */}
-        <section id="facilities" className="py-24 bg-white border-b border-[#E2DFD7]">
+        <section id="facilities" className="py-16 sm:py-20 lg:py-24 bg-white border-b border-[#E2DFD7]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-16 space-y-2">
+            <div className="text-center max-w-2xl mx-auto mb-12 lg:mb-16 space-y-2">
               <span className="text-xs font-bold uppercase tracking-widest text-[#D4A84F]">सुविधाएं</span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1F3A]">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0B1F3A]">
                 विद्यालय की सुविधाएँ
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
               {facilities.map((fac) => {
                 const IconComp = fac.icon;
                 return (
-                  <div key={fac.id} className="bg-[#FAF8F5] p-6 rounded-2xl border border-[#E2DFD7] space-y-3 flex flex-col justify-between hover:border-[#0B1F3A]/30 transition-colors">
+                  <div key={fac.id} className="h-full bg-[#FAF8F5] p-6 rounded-2xl border border-[#E2DFD7] space-y-3 flex flex-col justify-between hover:border-[#0B1F3A]/40 transition-all shadow-sm hover:shadow-md">
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-[#0B1F3A] text-[#D4A84F] flex items-center justify-center mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-[#0B1F3A] text-[#D4A84F] flex items-center justify-center mb-4 shrink-0 shadow-sm">
                         <IconComp className="w-5 h-5" />
                       </div>
-                      <h4 className="text-sm font-bold text-[#0B1F3A]">{fac.title}</h4>
-                      <p className="text-[11px] font-semibold text-[#D4A84F]">{fac.titleHindi}</p>
+                      <h3 className="text-sm font-bold text-[#0B1F3A]">{fac.title}</h3>
+                      <p className="text-[11px] font-semibold text-[#D4A84F] mt-0.5">{fac.titleHindi}</p>
                       <p className="text-xs text-[#64748B] mt-2 leading-relaxed">{fac.desc}</p>
                     </div>
                   </div>
@@ -624,16 +629,16 @@ export default function PremiumSchoolHomePage() {
         </section>
 
         {/* NOTICE BOARD SECTION */}
-        <section id="notices" className="py-24 bg-[#F8F6F0] border-b border-[#E2DFD7]">
+        <section id="notices" className="py-16 sm:py-20 lg:py-24 bg-[#F8F6F0] border-b border-[#E2DFD7]">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-12 gap-4 border-b border-[#E2DFD7] pb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-4 border-b border-[#E2DFD7] pb-4">
               <div>
                 <span className="text-xs font-bold uppercase tracking-widest text-[#D4A84F]">सूचना पट्ट</span>
-                <h2 className="text-3xl font-extrabold text-[#0B1F3A] mt-1">नवीनतम सूचनाएं (Latest Notices)</h2>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1">नवीनतम सूचनाएं (Latest Notices)</h2>
               </div>
               <a
                 href="#notices"
-                className="px-4 py-2 text-xs font-bold text-[#0B1F3A] bg-white border border-[#E2DFD7] hover:border-[#0B1F3A] rounded-xl transition-colors"
+                className="px-4 py-2 text-xs font-bold text-[#0B1F3A] bg-white border border-[#E2DFD7] hover:border-[#0B1F3A] rounded-xl transition-colors shadow-sm"
               >
                 सभी नोटिस देखें
               </a>
@@ -642,20 +647,22 @@ export default function PremiumSchoolHomePage() {
             <div className="space-y-4">
               {notices.length > 0 ? (
                 notices.map((n) => (
-                  <div key={n.id} className="bg-white p-6 rounded-2xl border border-[#E2DFD7] space-y-2 shadow-sm">
+                  <div key={n.id} className="bg-white p-6 rounded-2xl border border-[#E2DFD7] space-y-2 shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-center justify-between text-xs">
                       <span className="px-2.5 py-0.5 rounded-md font-bold bg-[#0B1F3A]/5 text-[#0B1F3A] border border-[#0B1F3A]/10">
                         {n.category}
                       </span>
                       <span className="text-[#64748B] font-mono">{n.date}</span>
                     </div>
-                    <h4 className="text-base font-bold text-[#0B1F3A]">{n.title}</h4>
-                    <p className="text-xs text-[#64748B] leading-relaxed">{n.description}</p>
+                    <h3 className="text-base font-bold text-[#0B1F3A]">{n.title}</h3>
+                    <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">{n.description}</p>
                   </div>
                 ))
               ) : (
-                <div className="bg-white p-8 rounded-2xl border border-[#E2DFD7] text-center text-xs text-[#64748B]">
-                  वर्तमान में कोई नई सूचना उपलब्ध नहीं है।
+                <div className="bg-white p-8 rounded-2xl border border-[#E2DFD7] text-center space-y-2 shadow-sm">
+                  <Bell className="w-8 h-8 text-[#64748B] mx-auto" />
+                  <p className="text-sm font-semibold text-[#0B1F3A]">वर्तमान में कोई नई सूचना उपलब्ध नहीं है।</p>
+                  <p className="text-xs text-[#64748B]">सभी नवीनतम सूचनाएं समय-समय पर यहाँ प्रकाशित की जाएँगी।</p>
                 </div>
               )}
             </div>
@@ -663,9 +670,9 @@ export default function PremiumSchoolHomePage() {
         </section>
 
         {/* DYNAMIC UPCOMING HOLIDAYS SECTION */}
-        <section id="holidays" className="py-20 bg-white border-b border-[#E2DFD7]">
+        <section id="holidays" className="py-16 sm:py-20 bg-white border-b border-[#E2DFD7]">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+            <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
               <span className="text-xs font-bold uppercase tracking-widest text-[#D4A84F]">कैलेंडर</span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A]">
                 आगामी अवकाश (Upcoming Holidays)
@@ -673,28 +680,33 @@ export default function PremiumSchoolHomePage() {
             </div>
 
             {holidaysLoading ? (
-              <div className="text-center py-8 text-xs text-[#64748B]">अवकाश लोड हो रहे हैं...</div>
+              <div className="flex items-center justify-center py-10 text-xs text-[#64748B] gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-[#0B1F3A]" />
+                <span>अवकाश सूची लोड हो रही है...</span>
+              </div>
             ) : holidays.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {holidays.map((h) => (
-                  <div key={h.id} className="bg-[#FAF8F5] p-5 rounded-2xl border border-[#E2DFD7] space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="px-2 py-0.5 rounded bg-[#0B1F3A]/10 text-[#0B1F3A] font-bold">
-                        {h.type || 'अवकाश'}
-                      </span>
-                      <span className="text-[#64748B] font-mono text-[11px]">
-                        {new Date(h.startDate).toLocaleDateString('hi-IN')}
-                      </span>
+                  <div key={h.id} className="h-full bg-[#FAF8F5] p-5 rounded-2xl border border-[#E2DFD7] space-y-2 flex flex-col justify-between shadow-sm">
+                    <div>
+                      <div className="flex items-center justify-between text-xs mb-2">
+                        <span className="px-2.5 py-0.5 rounded-md bg-[#0B1F3A]/10 text-[#0B1F3A] font-bold text-[11px]">
+                          {h.type || 'अवकाश'}
+                        </span>
+                        <span className="text-[#64748B] font-mono text-[11px]">
+                          {new Date(h.startDate).toLocaleDateString('hi-IN')}
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-bold text-[#0B1F3A]">{h.title}</h3>
+                      {h.description && (
+                        <p className="text-xs text-[#64748B] leading-relaxed mt-1">{h.description}</p>
+                      )}
                     </div>
-                    <h4 className="text-sm font-bold text-[#0B1F3A]">{h.title}</h4>
-                    {h.description && (
-                      <p className="text-xs text-[#64748B] leading-relaxed">{h.description}</p>
-                    )}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="bg-[#FAF8F5] p-8 rounded-2xl border border-[#E2DFD7] text-center space-y-2 max-w-md mx-auto">
+              <div className="bg-[#FAF8F5] p-8 rounded-2xl border border-[#E2DFD7] text-center space-y-2 max-w-md mx-auto shadow-sm">
                 <Calendar className="w-8 h-8 text-[#64748B] mx-auto" />
                 <p className="text-sm font-semibold text-[#0B1F3A]">वर्तमान में कोई नया आगामी अवकाश घोषित नहीं है।</p>
                 <p className="text-xs text-[#64748B]">नियमित कक्षाएं एवं पठन-पाठन कार्य सुचारू रूप से जारी है।</p>
@@ -704,39 +716,39 @@ export default function PremiumSchoolHomePage() {
         </section>
 
         {/* PHOTO GALLERY SECTION */}
-        <section id="gallery" className="py-24 bg-[#F8F6F0] border-b border-[#E2DFD7]">
+        <section id="gallery" className="py-16 sm:py-20 lg:py-24 bg-[#F8F6F0] border-b border-[#E2DFD7]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-16 space-y-2">
+            <div className="text-center max-w-2xl mx-auto mb-12 lg:mb-16 space-y-2">
               <span className="text-xs font-bold uppercase tracking-widest text-[#D4A84F]">फ़ोटो गैलरी</span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1F3A]">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0B1F3A]">
                 School Gallery
               </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="bg-white p-4 rounded-3xl border border-[#E2DFD7] shadow-sm space-y-3">
-                <div className="relative rounded-2xl overflow-hidden border border-[#E2DFD7] group">
+                <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-[#E2DFD7] group">
                   <img
                     src="/images/school-building.jpg"
-                    alt="UPS Taiyyabpur Badha Campus"
-                    className="w-full h-72 object-cover group-hover:scale-105 transition-transform duration-500"
+                    alt="UPS Taiyyabpur Badha Campus Building"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/80 via-transparent to-transparent"></div>
-                  <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-white/95 backdrop-blur-md text-xs font-bold text-[#0B1F3A]">
+                  <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-white/95 backdrop-blur-md text-xs font-bold text-[#0B1F3A] border border-[#E2DFD7]">
                     विद्यालय भवन एवं प्रांगण • UPS Taiyyabpur Badha
                   </div>
                 </div>
               </div>
 
               <div className="bg-white p-4 rounded-3xl border border-[#E2DFD7] shadow-sm space-y-3">
-                <div className="relative rounded-2xl overflow-hidden border border-[#E2DFD7] group">
+                <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-[#E2DFD7] group">
                   <img
                     src="/images/school-midday-meal.jpg"
                     alt="Students having Mid-Day Meal"
-                    className="w-full h-72 object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/80 via-transparent to-transparent"></div>
-                  <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-white/95 backdrop-blur-md text-xs font-bold text-[#0B1F3A]">
+                  <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-white/95 backdrop-blur-md text-xs font-bold text-[#0B1F3A] border border-[#E2DFD7]">
                     विद्यार्थी मध्याह्न भोजन (Mid-Day Meal) ग्रहण करते हुए
                   </div>
                 </div>
@@ -746,53 +758,53 @@ export default function PremiumSchoolHomePage() {
         </section>
 
         {/* CONTACT SECTION */}
-        <section id="contact" className="py-24 bg-white">
+        <section id="contact" className="py-16 sm:py-20 lg:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto text-center mb-16 space-y-2">
+            <div className="max-w-3xl mx-auto text-center mb-12 lg:mb-16 space-y-2">
               <span className="text-xs font-bold uppercase tracking-widest text-[#D4A84F]">संपर्क</span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B1F3A]">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0B1F3A]">
                 संपर्क करें (Contact Us)
               </h2>
             </div>
 
-            <div className="max-w-3xl mx-auto bg-[#FAF8F5] p-8 sm:p-12 rounded-3xl border border-[#E2DFD7] shadow-sm space-y-8">
+            <div className="max-w-3xl mx-auto bg-[#FAF8F5] p-6 sm:p-10 lg:p-12 rounded-3xl border border-[#E2DFD7] shadow-sm space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
                 
-                <div className="p-5 rounded-2xl bg-white border border-[#E2DFD7] space-y-2">
+                <div className="p-5 rounded-2xl bg-white border border-[#E2DFD7] space-y-2 shadow-sm">
                   <div className="text-xs font-bold uppercase tracking-wider text-[#D4A84F] flex items-center gap-1.5">
-                    <School className="w-4 h-4" /> School Name
+                    <School className="w-4 h-4 shrink-0" /> School Name
                   </div>
                   <div className="font-extrabold text-[#0B1F3A] text-base">{schoolInfo.name || 'UPS Taiyyabpur Badha'}</div>
                   <div className="text-xs text-[#64748B]">उच्च प्राथमिक विद्यालय (Upper Primary School)</div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-white border border-[#E2DFD7] space-y-2">
+                <div className="p-5 rounded-2xl bg-white border border-[#E2DFD7] space-y-2 shadow-sm">
                   <div className="text-xs font-bold uppercase tracking-wider text-[#D4A84F] flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4" /> Address
+                    <MapPin className="w-4 h-4 shrink-0" /> Address
                   </div>
                   <div className="font-bold text-[#172033] text-xs leading-relaxed">
                     {schoolInfo.address || 'Vill. Taiyyabpur Badha, Nagal, Saharanpur, Uttar Pradesh'}
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-white border border-[#E2DFD7] space-y-2">
+                <div className="p-5 rounded-2xl bg-white border border-[#E2DFD7] space-y-2 shadow-sm">
                   <div className="text-xs font-bold uppercase tracking-wider text-[#D4A84F] flex items-center gap-1.5">
-                    <Phone className="w-4 h-4 text-emerald-600" /> Phone
+                    <Phone className="w-4 h-4 text-emerald-600 shrink-0" /> Phone
                   </div>
                   <div className="font-mono font-extrabold text-[#0B1F3A] text-base">{schoolInfo.phone || '9058347719'}</div>
                   <div className="pt-2">
                     <a
                       href={`tel:${schoolInfo.phone || '9058347719'}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#0B1F3A] text-white hover:bg-[#16325c] transition-colors"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#0B1F3A] text-white hover:bg-[#16325c] transition-colors shadow-sm"
                     >
                       <Phone className="w-3.5 h-3.5 text-[#D4A84F]" /> Call School
                     </a>
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-white border border-[#E2DFD7] space-y-2">
+                <div className="p-5 rounded-2xl bg-white border border-[#E2DFD7] space-y-2 shadow-sm">
                   <div className="text-xs font-bold uppercase tracking-wider text-[#D4A84F] flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4" /> UDISE Code
+                    <ShieldCheck className="w-4 h-4 shrink-0" /> UDISE Code
                   </div>
                   <div className="font-mono font-extrabold text-[#0B1F3A] text-base">{schoolInfo.udiseCode || schoolInfo.code || '09011101603'}</div>
                   <div className="text-xs text-[#64748B]">Classes 1 to 8</div>
@@ -805,7 +817,7 @@ export default function PremiumSchoolHomePage() {
 
       </main>
 
-      {/* MINIMAL DEEP NAVY FOOTER */}
+      {/* FOOTER */}
       <footer className="bg-[#0B1F3A] text-white border-t border-[#D4A84F]/30 py-12 text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           

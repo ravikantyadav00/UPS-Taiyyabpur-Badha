@@ -3,8 +3,13 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
   body {
     @apply bg-slate-900 text-slate-100 antialiased min-h-screen font-sans;
+    overflow-x: hidden;
   }
 }
 
