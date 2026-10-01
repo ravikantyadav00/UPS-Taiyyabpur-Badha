@@ -32,8 +32,8 @@ export default function App() {
   // Mobile Auth State (Separate from Web, using backend API)
   const [user, setUser] = useState<UserProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [identifier, setIdentifier] = useState('admin@school.com');
-  const [password, setPassword] = useState('AdminSecret123!');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
