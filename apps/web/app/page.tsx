@@ -26,7 +26,11 @@ import {
   Droplets,
   Library,
   GraduationCap,
-  Loader2
+  Loader2,
+  ZoomIn,
+  ChevronLeft,
+  ArrowUpRight,
+  Sliders
 } from 'lucide-react';
 
 import { apiFetch } from '@/lib/api';
@@ -74,6 +78,8 @@ export default function PremiumSchoolHomePage() {
   const [holidaysLoading, setHolidaysLoading] = useState(true);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [overlayStyle, setOverlayStyle] = useState<'soft' | 'glass' | 'medium'>('soft');
   const [schoolInfo, setSchoolInfo] = useState<SchoolInfo>({
     name: 'UPS Taiyyabpur Badha',
     address: 'Vill. Taiyyabpur Badha, Nagal, Saharanpur, Uttar Pradesh',
@@ -81,6 +87,27 @@ export default function PremiumSchoolHomePage() {
     principalName: 'Sanjay Kumar',
     udiseCode: '09011101603',
   });
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setLightboxIndex(null);
+      } else if (e.key === 'ArrowLeft') {
+        setLightboxIndex((prev) => (prev !== null && gallery.length > 0 ? (prev - 1 + gallery.length) % gallery.length : null));
+      } else if (e.key === 'ArrowRight') {
+        setLightboxIndex((prev) => (prev !== null && gallery.length > 0 ? (prev + 1) % gallery.length : null));
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [lightboxIndex, gallery.length]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -728,32 +755,137 @@ export default function PremiumSchoolHomePage() {
         </section>
 
         {/* PHOTO GALLERY SECTION */}
-        <section id="gallery" className="py-16 sm:py-20 lg:py-24 bg-[#F8F6F0] border-b border-[#E2DFD7]">
+        <section id="gallery" className="py-12 sm:py-16 bg-[#F8F6F0] border-b border-[#E2DFD7] overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-12 lg:mb-16 space-y-2">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#D4A84F]">फ़ोटो गैलरी</span>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0B1F3A]">
+            {/* Section Header */}
+            <div className="text-center max-w-xl mx-auto mb-8 sm:mb-10 space-y-3">
+              <div className="flex items-center justify-center gap-3">
+                <span className="h-px w-8 sm:w-12 bg-[#D4A84F]/60"></span>
+                <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-[#C59B27]">
+                  फ़ोटो गैलरी
+                </span>
+                <span className="h-px w-8 sm:w-12 bg-[#D4A84F]/60"></span>
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0B1F3A] tracking-tight">
                 School Gallery
               </h2>
+
+              {/* Text Background / Shadow Controller */}
+              <div className="pt-1 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
+                <span className="text-[#64748B] font-semibold flex items-center gap-1 mr-1 text-[11px] sm:text-xs">
+                  <Sliders className="w-3.5 h-3.5 text-[#D4A84F]" /> टेक्स्ट बैकग्राउंड:
+                </span>
+                <button
+                  onClick={() => setOverlayStyle('soft')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                    overlayStyle === 'soft'
+                      ? 'bg-[#0B1F3A] text-[#D4A84F] shadow-sm'
+                      : 'bg-white text-[#64748B] hover:text-[#0B1F3A] border border-[#E2DFD7]'
+                  }`}
+                >
+                  🌤️ हल्का (Soft)
+                </button>
+                <button
+                  onClick={() => setOverlayStyle('glass')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                    overlayStyle === 'glass'
+                      ? 'bg-[#0B1F3A] text-[#D4A84F] shadow-sm'
+                      : 'bg-white text-[#64748B] hover:text-[#0B1F3A] border border-[#E2DFD7]'
+                  }`}
+                >
+                  ✨ ग्लास चिप (Glass)
+                </button>
+                <button
+                  onClick={() => setOverlayStyle('medium')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                    overlayStyle === 'medium'
+                      ? 'bg-[#0B1F3A] text-[#D4A84F] shadow-sm'
+                      : 'bg-white text-[#64748B] hover:text-[#0B1F3A] border border-[#E2DFD7]'
+                  }`}
+                >
+                  🌙 मीडियम (Medium)
+                </button>
+              </div>
             </div>
 
             {gallery.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {gallery.map((item) => (
-                  <div key={item.id} className="bg-white p-4 rounded-3xl border border-[#E2DFD7] shadow-sm space-y-3 flex flex-col justify-between">
-                    <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-[#E2DFD7] group bg-slate-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
+                {gallery.map((item, index) => (
+                  <div
+                    key={item.id || index}
+                    onClick={() => setLightboxIndex(index)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setLightboxIndex(index);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`View photo: ${item.title}`}
+                    className="group relative bg-white rounded-[20px] overflow-hidden border border-[#E2DFD7] shadow-sm hover:shadow-xl hover:shadow-[#0B1F3A]/10 hover:border-[#D4A84F]/60 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D4A84F]"
+                  >
+                    {/* Image Aspect Container (16:9) */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
                       <img
                         src={item.imageUrl}
                         alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover transform group-hover:scale-[1.06] transition-transform duration-500 ease-out"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = '/images/school-building.jpg';
                         }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/85 via-transparent to-transparent"></div>
-                      <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-white/95 backdrop-blur-md text-xs font-bold text-[#0B1F3A] border border-[#E2DFD7]">
-                        {item.title}
+                      
+                      {/* Dark overlay on hover */}
+                      <div className="absolute inset-0 bg-black/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                      {/* Center View/Magnifying Glass Icon */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#0B1F3A]/40 backdrop-blur-md border border-white/30 text-white flex items-center justify-center shadow-lg transform opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 ease-out group-hover:bg-[#D4A84F] group-hover:text-[#0B1F3A] group-hover:border-[#D4A84F]">
+                          <ZoomIn className="w-5 h-5 sm:w-6 sm:h-6" />
+                        </div>
                       </div>
+
+                      {/* Bottom Caption Overlay based on selected Overlay Style */}
+                      {overlayStyle === 'glass' ? (
+                        <div className="absolute inset-x-3 bottom-3 p-2.5 sm:p-3 rounded-xl bg-[#0B1F3A]/65 backdrop-blur-md border border-white/20 flex items-center justify-between gap-3 text-white shadow-lg">
+                          <div className="space-y-0.5 min-w-0 flex-1">
+                            {item.category && (
+                              <span className="inline-block px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#D4A84F] text-[#0B1F3A] rounded">
+                                {item.category}
+                              </span>
+                            )}
+                            <h3 className="font-bold text-xs leading-snug line-clamp-1 text-white">
+                              {item.title}
+                            </h3>
+                          </div>
+                          <div className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white flex items-center justify-center shrink-0 group-hover:bg-[#D4A84F] group-hover:text-[#0B1F3A] group-hover:border-[#D4A84F] group-hover:translate-x-0.5 transition-all duration-300">
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className={`absolute inset-x-0 bottom-0 px-4 sm:px-5 flex items-end justify-between gap-3 text-white transition-all duration-300 ${
+                            overlayStyle === 'soft'
+                              ? 'pt-8 pb-3.5 bg-gradient-to-t from-black/65 via-black/15 to-transparent'
+                              : 'pt-10 pb-4 bg-gradient-to-t from-[#0B1F3A]/85 via-[#0B1F3A]/45 to-transparent'
+                          }`}
+                        >
+                          <div className="space-y-1 min-w-0 flex-1">
+                            {item.category && (
+                              <span className="inline-block px-2 py-0.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-[#D4A84F] text-[#0B1F3A] rounded-md">
+                                {item.category}
+                              </span>
+                            )}
+                            <h3 className="font-bold text-xs sm:text-sm leading-snug line-clamp-2 text-slate-100 group-hover:text-white transition-colors drop-shadow-sm">
+                              {item.title}
+                            </h3>
+                          </div>
+                          <div className="w-8 h-8 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white flex items-center justify-center shrink-0 group-hover:bg-[#D4A84F] group-hover:text-[#0B1F3A] group-hover:border-[#D4A84F] group-hover:translate-x-1 transition-all duration-300">
+                            <ArrowUpRight className="w-4 h-4" />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -765,6 +897,83 @@ export default function PremiumSchoolHomePage() {
               </div>
             )}
           </div>
+
+          {/* LIGHTBOX MODAL */}
+          {lightboxIndex !== null && gallery[lightboxIndex] && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#0B1F3A]/90 backdrop-blur-md animate-fade-in"
+              onClick={() => setLightboxIndex(null)}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Image lightbox"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setLightboxIndex(null)}
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 p-2.5 rounded-full bg-white/10 hover:bg-[#D4A84F] hover:text-[#0B1F3A] text-white border border-white/20 backdrop-blur-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A84F]"
+                aria-label="Close lightbox"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              {/* Navigation Previous */}
+              {gallery.length > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxIndex((lightboxIndex - 1 + gallery.length) % gallery.length);
+                  }}
+                  className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/10 hover:bg-[#D4A84F] hover:text-[#0B1F3A] text-white border border-white/20 backdrop-blur-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A84F]"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              )}
+
+              {/* Navigation Next */}
+              {gallery.length > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxIndex((lightboxIndex + 1) % gallery.length);
+                  }}
+                  className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/10 hover:bg-[#D4A84F] hover:text-[#0B1F3A] text-white border border-white/20 backdrop-blur-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A84F]"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
+
+              {/* Lightbox Image Container */}
+              <div
+                className="relative max-w-5xl w-full max-h-[90vh] bg-[#0B1F3A] border border-white/15 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="relative flex-1 flex items-center justify-center bg-black/60 p-2 sm:p-4 min-h-[300px] sm:min-h-[450px]">
+                  <img
+                    src={gallery[lightboxIndex].imageUrl}
+                    alt={gallery[lightboxIndex].title}
+                    className="max-h-[75vh] w-auto max-w-full object-contain mx-auto rounded-lg"
+                  />
+                </div>
+                <div className="p-4 sm:p-5 bg-[#0B1F3A] border-t border-white/10 text-white flex items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    {gallery[lightboxIndex].category && (
+                      <span className="inline-block px-2 py-0.5 text-xs font-bold uppercase tracking-wider bg-[#D4A84F] text-[#0B1F3A] rounded">
+                        {gallery[lightboxIndex].category}
+                      </span>
+                    )}
+                    <p className="text-sm sm:text-base font-bold text-slate-100">
+                      {gallery[lightboxIndex].title}
+                    </p>
+                  </div>
+                  <div className="text-xs text-slate-400 shrink-0 font-medium">
+                    {lightboxIndex + 1} / {gallery.length}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* CONTACT SECTION */}
